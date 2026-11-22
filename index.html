@@ -1,0 +1,3092 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sợi Chỉ Mong Manh - Trọn Bộ 3 Chapter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background-color: #090d16;
+        }
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+        }
+        .animate-float {
+            animation: float 4.5s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-7px, 4px); }
+            40% { transform: translate(7px, -4px); }
+            60% { transform: translate(-5px, -2px); }
+            80% { transform: translate(5px, 2px); }
+        }
+        .animate-shake {
+            animation: shake 0.45s ease-in-out;
+        }
+        @keyframes thunderFlash {
+            0%, 100% { filter: brightness(1); }
+            15% { filter: brightness(2.4); }
+            30% { filter: brightness(0.6); }
+            45% { filter: brightness(2.1); }
+            70% { filter: brightness(1); }
+        }
+        .animate-thunder {
+            animation: thunderFlash 0.7s ease-out;
+        }
+        @keyframes threadPulse {
+            0%, 100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.8)); }
+            50% { stroke-dashoffset: 24; filter: drop-shadow(0 0 14px rgba(251, 113, 133, 1)); }
+        }
+        .red-thread-anim {
+            stroke-dasharray: 12 6;
+            animation: threadPulse 3s linear infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.4)); }
+            50% { filter: drop-shadow(0 0 22px rgba(253, 224, 71, 0.85)); }
+        }
+        .glow-light {
+            animation: pulseGlow 3s infinite;
+        }
+        /* Hiệu ứng nhịp thở & chuyển động nhân vật Visual Novel */
+        @keyframes vnBreathe {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.01); }
+        }
+        .vn-sprite-idle {
+            animation: vnBreathe 3.8s ease-in-out infinite;
+            transition: filter 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
+        }
+        @keyframes vnHop {
+            0%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-18px); }
+        }
+        .vn-sprite-hop {
+            animation: vnHop 0.45s ease-out;
+        }
+        .vn-dimmed {
+            filter: brightness(0.6) saturate(0.8);
+            transform: scale(0.96);
+        }
+        .vn-active {
+            filter: brightness(1.05) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.65));
+            transform: scale(1.02);
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rise 11s infinite linear;
+        }
+        @keyframes rise {
+            0% { transform: translateY(105vh) scale(0.4); opacity: 0; }
+            40% { opacity: 0.75; }
+            100% { transform: translateY(-10vh) scale(1.1); opacity: 0; }
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 9999px; }
+    </style>
+</head>
+<body class="w-screen h-screen relative text-white">
+
+    <!-- Hạt Ánh Sáng & Cánh Hoa Bay -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+    <!-- Thanh Điều Khiển Góc Trên Phải -->
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-1.5 sm:gap-2">
+        <button id="btn-qsave" onclick="quickSave()" class="hidden px-2.5 py-2 rounded-full bg-slate-950/80 hover:bg-emerald-950 border border-emerald-400/30 backdrop-blur-md text-xs font-semibold text-emerald-200 transition flex items-center gap-1 shadow-lg" title="Lưu nhanh vị trí hiện tại">
+            <span>💾</span> <span class="hidden lg:inline">Q.Save</span>
+        </button>
+        <button id="btn-qload" onclick="quickLoad()" class="hidden px-2.5 py-2 rounded-full bg-slate-950/80 hover:bg-sky-950 border border-sky-400/30 backdrop-blur-md text-xs font-semibold text-sky-200 transition flex items-center gap-1 shadow-lg" title="Tải lại điểm đã lưu">
+            <span>📂</span> <span class="hidden lg:inline">Q.Load</span>
+        </button>
+        <button id="btn-backlog" onclick="openBacklogModal()" class="hidden px-3 py-2 rounded-full bg-slate-950/75 hover:bg-slate-900 border border-white/20 backdrop-blur-md text-xs font-semibold transition flex items-center gap-1 shadow-lg" title="Xem lại lời thoại">
+            <span>📜</span> <span class="hidden md:inline">Lịch sử</span>
+        </button>
+        <button id="btn-auto" onclick="toggleAutoPlay()" class="hidden px-3 py-2 rounded-full bg-slate-950/75 hover:bg-slate-900 border border-white/20 backdrop-blur-md text-xs font-semibold transition flex items-center gap-1 shadow-lg" title="Tự động chạy thoại">
+            <span id="auto-icon">▶️</span> <span id="auto-text" class="hidden md:inline">Tự động</span>
+        </button>
+        <button id="btn-home-top" onclick="confirmReturnHome()" class="hidden px-3 py-2 rounded-full bg-slate-950/75 hover:bg-slate-900 border border-white/20 backdrop-blur-md text-xs font-semibold transition flex items-center gap-1 shadow-lg">
+            <span>🏠</span> <span class="hidden sm:inline">Trang chủ</span>
+        </button>
+        <button id="btn-audio" onclick="toggleAudio()" class="px-3.5 py-2 rounded-full bg-slate-950/75 hover:bg-slate-900 border border-rose-400/30 backdrop-blur-md text-xs font-semibold transition flex items-center gap-1.5 shadow-lg">
+            <span id="audio-icon">🔇</span> <span id="audio-text" class="hidden sm:inline">Nhạc nền</span>
+        </button>
+    </div>
+
+    <!-- ==================== MÀN HÌNH 1: ẢNH BÌA & TRANG CHỦ ==================== -->
+    <section id="screen-home" class="fixed inset-0 z-20 flex flex-col items-center justify-between p-5 sm:p-8 bg-gradient-to-b from-[#0b1021] via-[#261738] to-[#7c2d36] overflow-y-auto">
+        
+        <!-- Tranh Bìa Nghệ Thuật SVG Toàn Cảnh -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden flex items-end justify-center">
+            <!-- Vầng trăng / Mặt trời hoàng hôn lớn -->
+            <div class="absolute top-[14%] w-72 h-72 sm:w-[460px] sm:h-[460px] rounded-full bg-gradient-to-b from-amber-200/40 via-rose-400/30 to-transparent blur-2xl"></div>
+            <div class="absolute top-[18%] w-48 h-48 sm:w-72 sm:h-72 rounded-full border border-rose-200/20"></div>
+
+            <!-- Minh họa Nam và Yên đứng ngược sáng nối bởi Sợi Chỉ Đỏ -->
+            <svg viewBox="0 0 800 420" class="w-full max-w-5xl h-auto opacity-90">
+                <defs>
+                    <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="#090d16" stop-opacity="1"/>
+                    </linearGradient>
+                    <linearGradient id="silhouetteGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1e1b4b"/>
+                        <stop offset="100%" stop-color="#090d16"/>
+                    </linearGradient>
+                </defs>
+                <!-- Đường chân trời & Đồi -->
+                <path d="M0,340 Q200,310 400,335 T800,320 L800,420 L0,420 Z" fill="url(#groundGrad)"/>
+                
+                <!-- Bóng dáng Nam bên trái -->
+                <g transform="translate(230, 185)">
+                    <circle cx="40" cy="30" r="18" fill="url(#silhouetteGrad)"/>
+                    <path d="M22,26 Q35,8 56,22 Q45,14 22,26 Z" fill="#090d16"/>
+                    <path d="M20,52 C18,85 22,120 25,155 L55,155 C58,120 62,85 60,52 Z" fill="url(#silhouetteGrad)"/>
+                    <!-- Tay đưa về phía Yên -->
+                    <path d="M55,62 Q82,78 96,86" stroke="#1e1b4b" stroke-width="8" stroke-linecap="round" fill="none"/>
+                </g>
+
+                <!-- Bóng dáng Yên bên phải (tóc dài bay nhẹ trong gió) -->
+                <g transform="translate(490, 190)">
+                    <!-- Tóc dài bay -->
+                    <path d="M35,18 C55,25 78,65 88,110 C68,95 55,75 45,55 Z" fill="#090d16"/>
+                    <circle cx="38" cy="28" r="17" fill="url(#silhouetteGrad)"/>
+                    <path d="M22,50 C18,82 16,115 22,150 L54,150 C58,115 56,82 52,50 Z" fill="url(#silhouetteGrad)"/>
+                    <!-- Tay hướng về phía Nam -->
+                    <path d="M24,62 Q-2,78 -16,85" stroke="#1e1b4b" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+                </g>
+
+                <!-- SỢI CHỈ ĐỎ MONG MANH NỐI HAI BÀN TAY -->
+                <path d="M326,271 Q400,305 474,275" stroke="#fb7185" stroke-width="2.5" fill="none" class="red-thread-anim"/>
+                <circle cx="400" cy="289" r="3" fill="#fda4af" class="animate-ping"/>
+            </svg>
+        </div>
+
+        <!-- Phần Tiêu Đề Phía Trên -->
+        <div class="relative z-10 text-center max-w-2xl mx-auto mt-8 sm:mt-10 space-y-3">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/15 border border-rose-300/30 backdrop-blur-md text-rose-200 text-xs font-bold tracking-widest uppercase">
+                <span class="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+                Interactive Visual Novel • Đa Kết Cục
+            </div>
+            
+            <h1 class="font-serif-title text-4xl sm:text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-rose-100 to-rose-300 drop-shadow-[0_4px_24px_rgba(244,63,94,0.4)] leading-tight">
+                Sợi Chỉ Mong Manh
+            </h1>
+            
+            <p class="text-rose-100/85 text-sm sm:text-base max-w-md mx-auto leading-relaxed font-medium">
+                Mỗi lựa chọn nhỏ đều có thể kéo hai tâm hồn lại gần nhau, hoặc khiến sợi chỉ định mệnh đứt gãy mãi mãi...
+            </p>
+        </div>
+
+        <!-- Cụm Nút Hành Động Phía Dưới -->
+        <div class="relative z-10 w-full max-w-md mx-auto mb-4 space-y-3">
+            <button onclick="goToCharacterSelect()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-extrabold text-lg shadow-xl shadow-rose-950/60 transform hover:scale-[1.02] active:scale-95 transition">
+                Bắt Đầu Trải Nghiệm
+            </button>
+
+            <button onclick="openEndingsModal()" class="w-full py-3 rounded-2xl bg-slate-950/70 hover:bg-slate-900/90 border border-white/15 backdrop-blur-md text-rose-100 font-semibold text-sm transition flex items-center justify-center gap-2">
+                <span>📖</span>
+                <span>Sổ Tay Kết Cục Đã Mở Khóa (<span id="ending-count-label">0</span>/18)</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ==================== MÀN HÌNH 2: CHỌN CHƯƠNG & NHÂN VẬT ==================== -->
+    <section id="screen-select" class="hidden fixed inset-0 z-20 flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-[#090d16] via-[#1a1333] to-[#2d132c] overflow-y-auto">
+        <div class="max-w-4xl w-full mx-auto my-auto space-y-5">
+            <div class="text-center space-y-2">
+                <!-- Thanh Chọn Chapter 1 / Chapter 2 / Chapter 3 -->
+                <div class="inline-flex flex-wrap justify-center gap-1 p-1.5 rounded-2xl bg-slate-950/80 border border-white/15 shadow-inner mb-1">
+                    <button id="tab-chap-1" onclick="selectChapterTab(1)" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 shadow">
+                        Chapter 1: Cuộc Gặp Gỡ
+                    </button>
+                    <button id="tab-chap-2" onclick="selectChapterTab(2)" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-white flex items-center gap-1.5">
+                        <span id="tab-chap-2-lock">🔒</span>
+                        <span>Chapter 2: Ánh Đèn & Bóng Tối</span>
+                    </button>
+                    <button id="tab-chap-3" onclick="selectChapterTab(3)" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-white flex items-center gap-1.5">
+                        <span id="tab-chap-3-lock">🔒</span>
+                        <span>Chapter 3: Ranh Giới Mong Manh</span>
+                    </button>
+                </div>
+
+                <h2 id="select-chapter-heading" class="font-serif-title text-3xl sm:text-4xl font-bold text-white">Chapter 1: Cuộc Gặp Gỡ Định Mệnh</h2>
+                <p id="select-chapter-sub" class="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto">
+                    Cẩn trọng với từng quyết định. Chỉ có <strong class="text-amber-300">True Ending</strong> mới giữ trọn vẹn cốt truyện để mở đường sang chương tiếp theo.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Thẻ Nhân Vật: NAM -->
+                <div id="card-nam" onclick="startSelectedChapter('nam')" class="group relative rounded-3xl bg-gradient-to-b from-sky-950/60 to-slate-950/90 border border-sky-400/30 hover:border-amber-400 p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span id="card-badge-nam" class="px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-400/30">9 Tuổi • Chân Thành</span>
+                            <span id="card-status-nam" class="text-xs font-semibold text-slate-400">0/3 Kết cục</span>
+                        </div>
+                        
+                        <div id="avatar-preview-nam" class="w-32 h-32 mx-auto my-2 rounded-full bg-gradient-to-tr from-sky-500/20 to-amber-300/20 border-2 border-sky-300/40 flex items-center justify-center overflow-hidden group-hover:scale-105 transition">
+                            <!-- Render bằng JS -->
+                        </div>
+
+                        <h3 id="card-title-nam" class="text-2xl font-bold text-center text-sky-200 group-hover:text-amber-300 transition mt-2">Cậu Bé Nam</h3>
+                        <p id="card-desc-nam" class="mt-2.5 text-slate-300 text-sm leading-relaxed text-center">
+                            "Trên đường tự đi bộ về nhà, tôi bắt gặp một cô bé có đôi mắt sáng long lanh đang bị vây quanh. Liệu tôi có đủ dũng khí và sự tinh tế để bước vào thế giới của cậu ấy?"
+                        </p>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-amber-300 font-bold text-sm">
+                        <span id="card-cta-nam">Nhập vai Nam (Chapter 1)</span>
+                        <span class="group-hover:translate-x-1 transition">→</span>
+                    </div>
+                </div>
+
+                <!-- Thẻ Nhân Vật: YÊN -->
+                <div id="card-yen" onclick="startSelectedChapter('yen')" class="group relative rounded-3xl bg-gradient-to-b from-rose-950/50 to-slate-950/90 border border-rose-400/30 hover:border-rose-400 p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span id="card-badge-yen" class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-400/30">9 Tuổi • Nhạy Cảm</span>
+                            <span id="card-status-yen" class="text-xs font-semibold text-slate-400">0/3 Kết cục</span>
+                        </div>
+                        
+                        <div id="avatar-preview-yen" class="w-32 h-32 mx-auto my-2 rounded-full bg-gradient-to-tr from-rose-500/20 to-purple-400/20 border-2 border-rose-300/40 flex items-center justify-center overflow-hidden group-hover:scale-105 transition">
+                            <!-- Render bằng JS -->
+                        </div>
+
+                        <h3 id="card-title-yen" class="text-2xl font-bold text-center text-rose-200 group-hover:text-rose-300 transition mt-2">Cô Bé Yên</h3>
+                        <p id="card-desc-yen" class="mt-2.5 text-slate-300 text-sm leading-relaxed text-center">
+                            "Sau khi bà nội mất, ngọn đèn duy nhất trong đời tôi đã tắt. Đứng giữa ranh giới của sự thù hận và tuyệt vọng, một bàn tay ấm áp đã chìa ra..."
+                        </p>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-rose-300 font-bold text-sm">
+                        <span id="card-cta-yen">Nhập vai Yên (Chapter 1)</span>
+                        <span class="group-hover:translate-x-1 transition">→</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-1">
+                <button onclick="returnToHome()" class="px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 text-sm font-semibold transition">
+                    ← Quay lại Trang chủ
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MÀN HÌNH 3: GAMEPLAY VISUAL NOVEL ==================== -->
+    <section id="screen-game" class="hidden fixed inset-0 z-20 flex flex-col justify-between overflow-hidden">
+        <!-- Lớp 1: Bầu trời gradient theo cảm xúc -->
+        <div id="scene-bg" class="absolute inset-0 transition-all duration-1000 bg-gradient-to-b from-amber-500 via-orange-600 to-slate-900"></div>
+        <!-- Lớp 2: Khung cảnh Anime vẽ chi tiết (Trường học, Góc phố, Phòng ngủ, Cửa sổ) -->
+        <div id="scene-backdrop-art" class="absolute inset-0 pointer-events-none transition-opacity duration-700"></div>
+        <!-- Lớp 3: Phủ tối nhẹ chân màn hình để nổi bật hộp thoại -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-slate-950/35 pointer-events-none"></div>
+
+        <!-- HUD Góc Trên Trái & Thanh Chỉ Số Tâm Lý -->
+        <div class="fixed top-4 left-4 z-40 flex flex-col gap-2 max-w-[65vw] sm:max-w-md">
+            <div class="flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 shadow-lg w-fit">
+                <span id="hud-char-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span id="hud-char-name" class="text-xs sm:text-sm font-bold text-white">Tuyến: Nam</span>
+                <span class="text-white/30">|</span>
+                <span id="hud-scene-title" class="text-xs text-rose-200 font-medium truncate">Chiều tan học</span>
+            </div>
+
+            <!-- Thanh Chỉ Số Tâm Lý Nhân Vật -->
+            <div class="flex items-center gap-3 bg-slate-950/70 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/10 text-[11px] sm:text-xs shadow-md w-fit">
+                <div class="flex items-center gap-1.5">
+                    <span id="stat1-icon">❤️</span>
+                    <span id="stat1-label" class="text-slate-300 font-semibold">Rung động:</span>
+                    <span id="stat1-val" class="font-extrabold text-rose-300">20%</span>
+                </div>
+                <span class="text-white/20">|</span>
+                <div class="flex items-center gap-1.5">
+                    <span id="stat2-icon">🛡️</span>
+                    <span id="stat2-label" class="text-slate-300 font-semibold">Dũng khí:</span>
+                    <span id="stat2-val" class="font-extrabold text-amber-300">20%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sân Khấu Nhân Vật Visual Novel (Half-Body Sprites đứng sát hộp thoại) -->
+        <div class="relative z-10 flex-1 flex items-end justify-center px-2 sm:px-8 pb-[150px] sm:pb-[170px] pointer-events-none overflow-hidden">
+            <div id="scene-illustration" class="w-full max-w-4xl flex items-end justify-center"></div>
+        </div>
+
+        <!-- Overlay Mini-Game Tương Tác Trực Tiếp -->
+        <div id="minigame-overlay" class="hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-slate-900/95 border border-amber-400/40 rounded-3xl p-6 text-center space-y-4 shadow-2xl">
+                <span class="inline-block px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-extrabold uppercase tracking-wider">Tương tác trực tiếp</span>
+                <h3 id="mg-title" class="text-xl font-bold text-white">Thử thách cảm xúc</h3>
+                <p id="mg-desc" class="text-xs sm:text-sm text-slate-300">Hướng dẫn thao tác...</p>
+                <div id="mg-stage" class="py-3"></div>
+                <p id="mg-feedback" class="text-xs font-bold text-rose-300 h-4"></p>
+            </div>
+        </div>
+
+        <!-- Bảng Lựa Chọn Phân Nhánh Chuẩn Visual Novel (Nổi trực tiếp trên sân khấu) -->
+        <div id="choice-overlay" class="hidden fixed inset-0 z-40 bg-slate-950/55 backdrop-blur-[3px] flex flex-col items-center justify-center p-4 pb-36">
+            <div class="max-w-xl w-full space-y-3 animate-float">
+                <div class="text-center mb-2">
+                    <span id="choice-tag" class="inline-block px-3.5 py-1 rounded-full bg-slate-950/90 border border-rose-400/50 text-rose-300 text-xs font-extrabold uppercase tracking-widest shadow-lg">Ngã rẽ định mệnh</span>
+                    <h3 id="choice-prompt" class="mt-2 text-base sm:text-lg font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-slate-950/75 px-4 py-2 rounded-2xl border border-white/10">Bạn sẽ quyết định thế nào?</h3>
+                </div>
+                <div id="choice-buttons" class="space-y-2.5"></div>
+            </div>
+        </div>
+
+        <!-- Hộp Thoại Chuẩn Visual Novel Nhật Bản (Cố định gọn gàng ở đáy màn hình) -->
+        <div class="fixed bottom-0 left-0 right-0 z-30 w-full max-w-5xl mx-auto px-3 sm:px-6 pb-3 sm:pb-4">
+            <div id="dialogue-box" onclick="handleNextDialogue()" class="relative bg-gradient-to-b from-slate-900/88 to-slate-950/95 hover:border-rose-400/50 backdrop-blur-xl border-2 border-white/20 rounded-2xl sm:rounded-3xl px-4 py-3.5 sm:px-6 sm:py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.75)] cursor-pointer transition">
+                
+                <!-- Bảng Tên Nhân Vật (Nameplate) -->
+                <div id="speaker-badge" class="inline-flex items-center gap-2 -mt-7 sm:-mt-8 mb-1.5 px-4 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-extrabold text-xs sm:text-sm tracking-wide shadow-lg border border-white/30">
+                    Nhân vật
+                </div>
+
+                <div class="min-h-[76px] sm:min-h-[88px] flex flex-col justify-between">
+                    <p id="dialogue-text" class="text-slate-100 text-sm sm:text-[17px] leading-relaxed font-medium tracking-wide drop-shadow"></p>
+
+                    <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10 text-[11px] sm:text-xs text-slate-400">
+                        <span id="branch-indicator" class="text-rose-300/90 font-semibold">Nhánh: Chính tuyến</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="event.stopPropagation(); skipToNextChoice()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-rose-500/30 text-slate-200 font-semibold transition">
+                                Tua nhanh ⏩
+                            </button>
+                            <span id="next-hint" class="text-amber-300 font-bold animate-bounce">▼</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Thông báo Toast (Dùng cho Quick Save / Quick Load) -->
+    <div id="vn-toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full bg-slate-950/90 border border-emerald-400/50 text-emerald-300 text-xs font-bold shadow-2xl">
+        Đã lưu nhanh tiến trình!
+    </div>
+
+    <!-- ==================== MÀN HÌNH 4: MÀN HÌNH KẾT THÚC (ENDING) ==================== -->
+    <section id="screen-ending" class="hidden fixed inset-0 z-40 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#090d16] via-[#1c1330] to-[#090d16] text-center">
+        <div class="max-w-xl w-full bg-white/5 border border-white/15 backdrop-blur-xl rounded-3xl p-7 sm:p-10 shadow-2xl space-y-5">
+            <div id="ending-icon" class="w-16 h-16 mx-auto rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-3xl">
+                ✨
+            </div>
+            
+            <div class="space-y-1">
+                <span id="ending-type-badge" class="inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    TRUE ENDING • CHÍNH TUYẾN
+                </span>
+                <h2 id="ending-title" class="font-serif-title text-2xl sm:text-4xl font-bold text-white pt-2">
+                    Sợi Chỉ Chớm Nở
+                </h2>
+            </div>
+
+            <p id="ending-summary" class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                Tóm tắt diễn biến kết cục...
+            </p>
+
+            <!-- Dòng chữ Coming Soon động theo Chapter -->
+            <div id="chapter2-banner" class="py-3 px-4 rounded-2xl bg-gradient-to-r from-rose-500/20 via-amber-500/20 to-rose-500/20 border border-amber-300/30">
+                <p id="coming-soon-text" class="font-serif-title text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-rose-200">
+                    Chapter 2 Coming Soon
+                </p>
+            </div>
+
+            <div class="pt-2 flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+                <button onclick="retryCurrentRoute()" class="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition">
+                    ↺ Thử Nhánh Khác
+                </button>
+                <button id="btn-play-next-chapter" onclick="playNextChapterDirectly()" class="hidden px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition">
+                    Chơi Tiếp Chapter 2 →
+                </button>
+                <button onclick="returnToHome()" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition">
+                    Về Trang Chủ
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MODAL SỔ TAY KẾT CỤC ==================== -->
+    <div id="modal-endings" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/20 rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] overflow-y-auto space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                    <h3 class="font-serif-title text-2xl font-bold text-white">📖 Sổ Tay Kết Cục</h3>
+                    <p class="text-xs text-slate-400">Khám phá toàn bộ 18 ngã rẽ của Sợi Chỉ Mong Manh (Chapter 1, 2 & 3)</p>
+                </div>
+                <button onclick="closeEndingsModal()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold">✕</button>
+            </div>
+            <div id="endings-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+    </div>
+
+    <!-- Modal Lịch Sử Hội Thoại (Backlog) -->
+    <div id="modal-backlog" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/20 rounded-3xl p-6 max-w-xl w-full max-h-[80vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                <h3 class="font-serif-title text-xl font-bold text-white">📜 Nhật Ký Lời Thoại</h3>
+                <button onclick="closeBacklogModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold">✕</button>
+            </div>
+            <div id="backlog-content" class="flex-1 overflow-y-auto space-y-3 pr-1 text-sm"></div>
+        </div>
+    </div>
+
+    <!-- Modal Xác Nhận Về Trang Chủ -->
+    <div id="modal-confirm-home" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-white">Quay về Trang chủ?</h3>
+            <p class="text-sm text-slate-300">Tiến trình nhánh hiện tại sẽ không được lưu.</p>
+            <div class="flex gap-3 justify-center pt-2">
+                <button onclick="closeConfirmHome()" class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold">Chơi tiếp</button>
+                <button onclick="confirmYesHome()" class="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-slate-950 text-sm font-bold">Về Trang chủ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DANH SÁCH 12 KẾT CỤC (CHAPTER 1 & CHAPTER 2) ====================
+        const ENDINGS_CATALOG = {
+            // --- CHAPTER 1 ---
+            "nam_true": {
+                chapter: 1,
+                route: "nam",
+                type: "TRUE ENDING",
+                title: "[Ch.1] Sợi Chỉ Chớm Nở (Tuyến Nam)",
+                icon: "🌅",
+                desc: "Nam đã dũng cảm giải vây và chân thành ngỏ lời kết bạn. Câu chuyện tình yêu của cậu chính thức bắt đầu, mở lối sang Chapter 2."
+            },
+            "nam_bad_walkaway": {
+                chapter: 1,
+                route: "nam",
+                type: "BAD ENDING 1",
+                title: "[Ch.1] Người Lạ Lướt Qua",
+                icon: "🍂",
+                desc: "Vì e ngại rắc rối và quay lưng bước tiếp, Nam đã bỏ lỡ cuộc gặp gỡ định mệnh. Sợi chỉ đỏ đứt đoạn ngay trước khi kịp nối."
+            },
+            "nam_bad_shy": {
+                chapter: 1,
+                route: "nam",
+                type: "BAD ENDING 2",
+                title: "[Ch.1] Lời Chào Bỏ Ngỏ",
+                icon: "🌫️",
+                desc: "Dù đã cứu Yên nhưng vì quá nhút nhát không dám mở lời làm bạn, Nam đành nhìn bóng lưng cô bé khuất dần sau góc phố."
+            },
+            "yen_true": {
+                chapter: 1,
+                route: "yen",
+                type: "TRUE ENDING",
+                title: "[Ch.1] Ngọn Đèn Được Thắp Lại (Tuyến Yên)",
+                icon: "🕯️",
+                desc: "Từ đáy vực tuyệt vọng sau ngày bà mất, bàn tay ấm áp của Nam đã cứu rỗi Yên. Cô bé lần đầu mong ngày mai đến thật nhanh."
+            },
+            "yen_bad_stone": {
+                chapter: 1,
+                route: "yen",
+                type: "BAD ENDING 3",
+                title: "[Ch.1] Bóng Tối Nuốt Chửng",
+                icon: "🪨",
+                desc: "Không kiềm chế được cơn thịnh nộ, Yên đã lao lên trước khi Nam kịp tới. Vụ ẩu đả khiến cả hai mãi mãi không bao giờ trò chuyện."
+            },
+            "yen_bad_run": {
+                chapter: 1,
+                route: "yen",
+                type: "BAD ENDING 4",
+                title: "[Ch.1] Vỏ Ốc Cô Độc",
+                icon: "🌧️",
+                desc: "Nỗi sợ bị tổn thương khiến Yên từ chối bàn tay của Nam và chạy trốn về căn nhà lạnh lẽo. Sợi chỉ lại thu mình vào bóng tối."
+            },
+
+            // --- CHAPTER 2 ---
+            "c2_nam_true": {
+                chapter: 2,
+                route: "nam",
+                type: "TRUE ENDING",
+                title: "[Ch.2] Tình Yêu Đơn Phương & Bóng Mây Cấp 3",
+                icon: "🧸",
+                desc: "Suốt những năm cấp 1 và cấp 2 tươi đẹp, tình cảm Nam dành cho Yên đã hóa thành tình yêu sâu đậm. Nhưng bước sang cấp 3, một biến cố sắp chấm dứt tất cả..."
+            },
+            "c2_nam_bad_distance": {
+                chapter: 2,
+                route: "nam",
+                type: "BAD ENDING 5",
+                title: "[Ch.2] Khoảng Cách Vô Hình",
+                icon: "📚",
+                desc: "Vì quá mải mê với những mối quan hệ mới ở trường cấp 2 mà lơ là nỗi sợ của Yên, Nam dần đánh mất sự tin tưởng từ cô bạn hàng xóm."
+            },
+            "c2_nam_bad_confess": {
+                chapter: 2,
+                route: "nam",
+                type: "ALTERNATE ENDING",
+                title: "[Ch.2] Lời Tỏ Tình Vội Vã",
+                icon: "💌",
+                desc: "Nam thổ lộ tình cảm quá sớm ngay cuối cấp 2. Nỗi sợ hãi bị tổn thương khiến Yên hoảng loạn thu mình lại, làm cả hai ngượng ngùng xa cách."
+            },
+            "c2_yen_true": {
+                chapter: 2,
+                route: "yen",
+                type: "TRUE ENDING",
+                title: "[Ch.2] Kế Hoạch Dưới Đáy Ngăn Kéo",
+                icon: "📓",
+                desc: "Tình yêu dành cho Nam đã hóa thành nỗi ám ảnh tột cùng. Yên khóa chặt 'phương án cuối cùng' vào đáy ngăn kéo, mở lối sang Chapter 3."
+            },
+            "c2_yen_bad_letter": {
+                chapter: 2,
+                route: "yen",
+                type: "BAD ENDING 6",
+                title: "[Ch.2] Mảnh Giấy Hồng Vỡ Vụn",
+                icon: "💔",
+                desc: "Không kìm nén được cơn ghen tuông trước bức thư tình, Yên đã xé nát nó ngay trước mặt Nam, khiến tình bạn nhiều năm tan vỡ."
+            },
+            "c2_yen_bad_burn": {
+                chapter: 2,
+                route: "yen",
+                type: "BAD ENDING 7",
+                title: "[Ch.2] Tro Tàn Thanh Xuân",
+                icon: "🔥",
+                desc: "Sợ hãi sự ích kỷ của chính mình, Yên tự tay đốt bỏ cuốn nhật ký và lặng lẽ rời xa cuộc đời Nam."
+            },
+
+            // --- CHAPTER 3 ---
+            "c3_nam_true": {
+                chapter: 3,
+                route: "nam",
+                type: "TRUE ENDING",
+                title: "[Ch.3] Sợi Chỉ Trọn Vẹn (Tuyến Nam)",
+                icon: "💍",
+                desc: "Dưới lưỡi dao sắc lạnh, Nam đã dũng cảm bộc bạch tình yêu từ tiếng sét ái tình năm 9 tuổi, cứu rỗi Yên và mở ra trang mới hạnh phúc bên nhau."
+            },
+            "c3_nam_bad_panic": {
+                chapter: 3,
+                route: "nam",
+                type: "BAD ENDING 8",
+                title: "[Ch.3] Vùng Vẫy Tuyệt Vọng",
+                icon: "⛓️",
+                desc: "Sự hoảng loạn và gào thét vùng vẫy của Nam vô tình đẩy Yên vào bước đường cùng, khiến mọi nỗ lực cứu vãn đều sụp đổ."
+            },
+            "c3_nam_bad_lie": {
+                chapter: 3,
+                route: "nam",
+                type: "BAD ENDING 9",
+                title: "[Ch.3] Lời Nói Dối Vụng Về",
+                icon: "🥀",
+                desc: "Chỉ nói lời dối trá qua loa để thoát thân, Nam không ngờ Yên đã thuộc nằm lòng từng biểu cảm của cậu suốt 10 năm..."
+            },
+            "c3_yen_true": {
+                chapter: 3,
+                route: "yen",
+                type: "TRUE ENDING",
+                title: "[Ch.3] Ánh Đèn Ngay Bên Cạnh (Tuyến Yên)",
+                icon: "💖",
+                desc: "Bão lòng tan biến trước ánh mắt chân thành không chút giả dối của Nam. Đêm đó, Yên không còn phải ôm gấu bông nữa vì ánh đèn ấm áp đã ở ngay bên cạnh."
+            },
+            "c3_yen_bad_hesitate": {
+                chapter: 3,
+                route: "yen",
+                type: "BAD ENDING 10",
+                title: "[Ch.3] Ly Nước Nguội Lạnh",
+                icon: "🥛",
+                desc: "Không nỡ ra tay với người mình yêu nhất, Yên lặng lẽ cất giấu nỗi tuyệt vọng và rời xa thành phố, để lại sợi chỉ đứt đoạn trong mưa."
+            },
+            "c3_yen_bad_cage": {
+                chapter: 3,
+                route: "yen",
+                type: "BAD ENDING 11",
+                title: "[Ch.3] Lồng Giam Vĩnh Viễn",
+                icon: "🔒",
+                desc: "Nỗi ám ảnh quá lớn khiến Yên không thể tin bất kỳ lời nào của Nam. Cánh cửa phòng khóa chặt, giam cầm cả hai trong bóng tối mãi mãi."
+            }
+        };
+
+        let unlockedEndings = new Set(JSON.parse(localStorage.getItem("scmm_endings") || "[]"));
+        let selectedChapterTab = 1;
+
+        function saveEndingsToStorage() {
+            localStorage.setItem("scmm_endings", JSON.stringify([...unlockedEndings]));
+        }
+
+        // ==================== CÂY CỐT TRUYỆN PHÂN NHÁNH (CHAPTER 1 & CHAPTER 2) ====================
+        const STORY_NODES = {
+            // ================= CHAPTER 1: TUYẾN CỦA NAM =================
+            "nam_1": {
+                chapter: 1,
+                sceneTitle: "Tan học buổi chiều",
+                branchName: "Chính tuyến",
+                bg: "from-sky-600 via-amber-400 to-orange-500",
+                visual: "nam_walk",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Đó là khoảng thời gian đó, năm tôi khoảng 9 tuổi. Lúc tan học, tôi quyết định đi bộ về nhà do được bố mẹ nói rằng không chở được tôi vì lý do công việc.",
+                next: "nam_2"
+            },
+            "nam_2": {
+                chapter: 1,
+                sceneTitle: "Góc phố cũ",
+                branchName: "Chính tuyến",
+                bg: "from-amber-600 via-orange-600 to-slate-800",
+                visual: "bully_scene_nam",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Khi đi được nửa quãng đường, tôi bỗng thấy một nhóm con gái khoảng 2-3 người đang xúm lại bắt nạt một bạn nữ trạc tuổi tôi.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Phản ứng đầu tiên",
+                        prompt: "Thấy bạn nữ bị vây quanh bắt nạt, Nam sẽ làm gì?",
+                        options: [
+                            { text: "Hét lớn giả vờ có thầy giáo đang tới để dọa bọn họ! (+25 Dũng khí)", stat1: 10, stat2: 25, next: "nam_mg_shout" },
+                            { text: "Lao thẳng vào giữa nhóm con gái để cãi tay đôi (+35 Dũng khí)", stat1: 5, stat2: 35, next: "nam_3_fight" },
+                            { text: "Sợ bị vạ lây nên cúi đầu đi vòng qua đường khác... (-20 Dũng khí)", stat1: 0, stat2: -20, next: "nam_bad_walk_1" }
+                        ]
+                    }
+                ]
+            },
+            "nam_mg_shout": {
+                chapter: 1,
+                sceneTitle: "Lấy hơi hét lớn",
+                branchName: "Chính tuyến",
+                bg: "from-amber-500 via-orange-500 to-slate-900",
+                visual: "bully_scene_nam",
+                speaker: "Nam (Nội tâm)",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "Tim tôi đập thình thịch! Phải hét thật to và dứt khoát để bọn họ tin là thầy giáo đang tới thật!",
+                minigame: {
+                    type: "timing",
+                    title: "Lấy Hết Can Đảm Hét Lớn!",
+                    desc: "Nhấn nút HÉT LỚN ngay khi con trỏ đi vào vùng màu vàng rực!",
+                    successNext: "nam_3_shout",
+                    failNext: "nam_3_shout"
+                }
+            },
+            "nam_bad_walk_1": {
+                chapter: 1,
+                sceneTitle: "Bước chân vội vã",
+                branchName: "Nhánh: Tránh né",
+                bg: "from-slate-800 via-slate-900 to-black",
+                visual: "nam_walk",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "Tôi tự nhủ mình chỉ là một đứa trẻ 9 tuổi, dính vào chuyện của con gái thật phiền phức. Tôi rảo bước đi thật nhanh qua góc phố, bỏ lại tiếng cười cợt phía sau...",
+                next: "nam_bad_walk_2"
+            },
+            "nam_bad_walk_2": {
+                chapter: 1,
+                sceneTitle: "Bỏ lỡ",
+                branchName: "Nhánh: Tránh né",
+                bg: "from-slate-900 via-indigo-950 to-black",
+                visual: "sunset_farewell",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-rose-500 to-red-700 text-white",
+                text: "Ngày hôm sau, nghe tin có một bạn nữ lớp bên chuyển trường sau vụ xô xát chiều qua. Nam không bao giờ biết rằng mình đã lướt qua người con gái định mệnh của đời mình.",
+                endingId: "nam_bad_walkaway"
+            },
+            "nam_3_fight": {
+                chapter: 1,
+                sceneTitle: "Đối đầu",
+                branchName: "Nhánh: Dũng cảm bộc trực",
+                bg: "from-orange-600 via-red-600 to-slate-900",
+                visual: "nam_shout",
+                speaker: "Nam",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "Tôi chạy tới chắn trước mặt cô bé:\n— Này! Ba đánh một không biết xấu hổ à? Thầy giám thị đang đi tuần ngay đằng kia kìa!",
+                next: "nam_4_meet"
+            },
+            "nam_3_shout": {
+                chapter: 1,
+                sceneTitle: "Tiếng hô giải vây",
+                branchName: "Chính tuyến",
+                bg: "from-amber-500 via-orange-400 to-sky-700",
+                visual: "nam_shout",
+                speaker: "Nam",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "Thấy thế tôi liền nói lớn:\n— Thầy giáo đang tới kìa!",
+                next: "nam_4_meet"
+            },
+            "nam_4_meet": {
+                chapter: 1,
+                sceneTitle: "Khoảnh khắc chạm mắt",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-sky-600",
+                visual: "meet_eyes_nam",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Sau đó nhóm kia sợ quá nên đã chạy đi, bỏ lại cô bé đó một mình. Tôi liền chạy đến đỡ cô bé đứng dậy. Khi đó, hai mắt chúng tôi nhìn vào nhau, tôi bỗng cảm thấy một cảm xúc đang trào dâng, một cảm xúc mà tôi chưa từng trải qua trước đây.",
+                next: "nam_5_admire"
+            },
+            "nam_5_admire": {
+                chapter: 1,
+                sceneTitle: "Rung động đầu đời",
+                branchName: "Chính tuyến",
+                bg: "from-rose-300 via-amber-200 to-pink-500",
+                visual: "yen_sparkle",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Cậu ấy có mái tóc dài óng ả như được chăm chút rất nhiều. Đôi mắt sáng long lanh ấy như hút hồn tôi vậy. Phải công nhận rằng, cậu ấy xinh hơn tất cả con gái mà tôi đã từng gặp trước đây.",
+                next: "nam_6_ask"
+            },
+            "nam_6_ask": {
+                chapter: 1,
+                sceneTitle: "Lời hỏi thăm",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-rose-400 to-indigo-800",
+                visual: "both_talk_normal",
+                speaker: "Nam & Cô bé",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "Tôi liền hỏi cậu ấy:\n— Cậu có sao không?\n— À mình không sao. – Cô bé đáp, giọng hơi run – Tớ cảm ơn cậu rất nhiều nhé.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Nhịp đập trái tim",
+                        prompt: "Đứng trước cô bé dễ thương đang nhìn mình đầy biết ơn, mặt Nam bỗng đỏ bừng...",
+                        options: [
+                            { text: "Lấy hết can đảm, lắp bắp ngỏ lời muốn làm bạn với cậu ấy! (+30 Rung động)", stat1: 30, stat2: 15, next: "nam_7_befriend" },
+                            { text: "Ngại ngùng quá mức, chỉ gãi đầu bảo 'Không có gì' rồi chạy biến về nhà", stat1: 10, stat2: -15, next: "nam_bad_shy_1" }
+                        ]
+                    }
+                ]
+            },
+            "nam_bad_shy_1": {
+                chapter: 1,
+                sceneTitle: "Sự nhút nhát",
+                branchName: "Nhánh: Bỏ ngỏ",
+                bg: "from-indigo-900 via-slate-900 to-black",
+                visual: "nam_blush",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "Mặt tôi nóng ran như lửa đốt. Vì quá xấu hổ, tôi chỉ lí nhí 'Ừm... tớ về đây' rồi quay đầu chạy một mạch về nhà mà thậm chí còn chưa kịp hỏi tên cậu ấy.",
+                endingId: "nam_bad_shy"
+            },
+            "nam_7_befriend": {
+                chapter: 1,
+                sceneTitle: "Lời đề nghị kết bạn",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-indigo-800",
+                visual: "nam_blush",
+                speaker: "Nam",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "Tôi liền ửng đỏ mặt. Cảm xúc này là sao? Tôi liền lắp bắp nói:\n— Thấy cậu như thế này thì không sao rồi. Mà.. Mà cậu có .. muốn làm bạn cùng tớ .. không?",
+                next: "nam_8_reply"
+            },
+            "nam_8_reply": {
+                chapter: 1,
+                sceneTitle: "Niềm vui bất ngờ",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-purple-800",
+                visual: "yen_smile_bright",
+                speaker: "Cô bé",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "— Ừm, cậu muốn làm bạn với mình á.\n— Ừm.. Ừm đúng rồi – Tôi trả lời ngại ngùng – Thế.. thế cậu không muốn sao?\n— Không đâu, chỉ là vì lần đầu tiên có người nói muốn làm bạn với mình nên mình hơi vui. Nên nếu cậu muốn thì mình đồng ý thôi.",
+                next: "nam_9_names"
+            },
+            "nam_9_names": {
+                chapter: 1,
+                sceneTitle: "Nam và Yên",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-purple-800",
+                visual: "both_happy",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "— Cảm… cảm ơn cậu – Tôi nói – Mà cậu tên gì? Tớ tên là Nam. Rất vui khi được làm bạn với cậu.\nĐôi mắt bạn ấy sáng lên một chút và nói:\n— Tớ tên Yên. Mình cũng vui khi được làm bạn cùng cậu.",
+                next: "nam_10_end"
+            },
+            "nam_10_end": {
+                chapter: 1,
+                sceneTitle: "Khởi đầu câu chuyện",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-orange-500 to-indigo-950",
+                visual: "sunset_farewell",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Thế là chúng tôi chào tạm biệt nhau xong rồi về. Câu chuyện tình yêu của tôi chính thức bắt đầu.",
+                endingId: "nam_true"
+            },
+
+            // ================= CHAPTER 1: TUYẾN CỦA YÊN =================
+            "yen_1": {
+                chapter: 1,
+                sceneTitle: "Căn nhà lạnh lẽo",
+                branchName: "Chính tuyến",
+                bg: "from-slate-900 via-slate-800 to-indigo-950",
+                visual: "yen_lonely_house",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Tôi không biết hơi ấm của một cái ôm từ cha mẹ có cảm giác như thế nào. Trong những ký ức nhạt nhòa của tuổi thơ, nhà chỉ là một khoảng không rộng lớn, lạnh lẽo và vắng lặng. Cha mẹ tôi luôn bận rộn với những chuyến công tác dài ngày...",
+                next: "yen_2"
+            },
+            "yen_2": {
+                chapter: 1,
+                sceneTitle: "Ngọn đèn mang tên Bà Nội",
+                branchName: "Chính tuyến",
+                bg: "from-amber-900/80 via-slate-800 to-slate-950",
+                visual: "grandma_memory",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Ở trường, lũ trẻ chỉ tay cười nhạo tôi là đứa không có cha mẹ. Tôi chỉ biết nuốt ngược nước mắt vì nhớ lời bà nội dặn: “Yên của bà phải luôn hiền lành và bao dung với mọi người xung quanh nhé.” Bà là cả thế giới, là ngọn đèn duy nhất sưởi ấm tâm hồn tôi.",
+                next: "yen_3"
+            },
+            "yen_3": {
+                chapter: 1,
+                sceneTitle: "Ngọn đèn tắt ngóm",
+                branchName: "Chính tuyến",
+                bg: "from-black via-slate-950 to-zinc-900",
+                visual: "yen_darkness",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Thế nhưng, năm tôi 9 tuổi, ngọn đèn ấy tắt ngóm. Bà bỏ tôi đi mãi mãi. Thế giới của tôi hoàn toàn sụp đổ sau ngày tang của bà. Đêm nào tôi cũng ôm chăn thật chặt vì sợ căn nhà này sẽ chỉ còn lại một mình tôi.",
+                next: "yen_4"
+            },
+            "yen_4": {
+                chapter: 1,
+                sceneTitle: "Góc phố cũ",
+                branchName: "Chính tuyến",
+                bg: "from-zinc-900 via-red-950/70 to-slate-950",
+                visual: "bully_scene_yen",
+                speaker: "Đám bắt nạt",
+                speakerStyle: "from-red-500 to-rose-700 text-white",
+                shake: true,
+                text: "Chiều hôm đó, khi sân trường đã vắng bóng người, ba đứa con gái chặn đường tôi ở góc phố cũ. Bọn nó cười cợt, ánh mắt đầy sự ác ý:\n— Đồ mất bà, ha ha, đáng đời mày chưa!",
+                next: "yen_5_stone"
+            },
+            "yen_5_stone": {
+                chapter: 1,
+                sceneTitle: "Viên đá sắc nhọn",
+                branchName: "Chính tuyến",
+                bg: "from-red-950 via-black to-slate-950",
+                visual: "yen_stone_grip",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-red-400 to-rose-600 text-white",
+                text: "Một luồng khí lạnh chạy dọc sống lưng, đầu óc tôi trống rỗng. Tôi nhìn xuống đất, một viên đá sắc nhọn nằm ngay tầm tay. Những ngón tay nhỏ bé siết chặt lấy viên đá đến mức rướm máu. Tôi muốn chúng phải im miệng!",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Ranh giới bóng tối",
+                        prompt: "Cơn thịnh nộ tăm tối đang dâng trào từ đáy vực tuyệt vọng...",
+                        options: [
+                            { text: "Cố gắng hít thở sâu, kiềm chế cơn giận giữa cơn uất nghẹn (+20 Hy vọng)", stat1: 10, stat2: 20, next: "yen_mg_calm" },
+                            { text: "Mất hết lý trí, vung viên đá lao thẳng vào đám bắt nạt ngay lập tức! (+40 Bóng tối)", stat1: 40, stat2: -20, next: "yen_bad_stone_1" }
+                        ]
+                    }
+                ]
+            },
+            "yen_mg_calm": {
+                chapter: 1,
+                sceneTitle: "Giữ chặt lý trí",
+                branchName: "Chính tuyến",
+                bg: "from-red-950 via-slate-950 to-black",
+                visual: "yen_stone_grip",
+                speaker: "Yên (Nội tâm)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Bàn tay run rẩy siết chặt viên đá... Lời dặn của bà nội văng vẳng bên tai. Mình không được biến thành kẻ xấu như bọn chúng!",
+                minigame: {
+                    type: "mash",
+                    title: "Kiềm Chế Cơn Thịnh Nộ",
+                    desc: "Nhấp liên tục vào nút BÌNH TĨNH để xua tan bóng tối trước khi mất kiểm soát!",
+                    successNext: "yen_6_saved",
+                    failNext: "yen_bad_stone_1"
+                }
+            },
+            "yen_bad_stone_1": {
+                chapter: 1,
+                sceneTitle: "Cơn thịnh nộ bùng nổ",
+                branchName: "Nhánh: Tuyệt vọng",
+                bg: "from-red-950 via-zinc-950 to-black",
+                visual: "yen_stone_grip",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-red-600 to-rose-900 text-white",
+                shake: true,
+                text: "Yên lao lên trước khi cậu bé kịp rẽ vào góc phố. Tiếng la hét kinh hoàng vang lên. Khi Nam chạy tới nơi, tất cả đã muộn — Yên đứng chết lặng với bàn tay rướm máu, ánh mắt đóng băng mọi cảm xúc.",
+                endingId: "yen_bad_stone"
+            },
+            "yen_6_saved": {
+                chapter: 1,
+                sceneTitle: "Tia sáng xé tan bóng tối",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-orange-300 to-sky-600",
+                visual: "nam_hero_light",
+                speaker: "Giọng nói trong trẻo",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "Ngay vào khoảnh khắc tôi định lao lên để đánh trả, một giọng nói lớn trong trẻo bất ngờ xé toạc bầu không khí nghẹt thở ấy:\n— Thầy giáo đang tới kìa!",
+                next: "yen_7_hand"
+            },
+            "yen_7_hand": {
+                chapter: 1,
+                sceneTitle: "Bàn tay ấm áp",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-300 to-sky-600",
+                visual: "nam_hand_help",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Sau đó bọn kia chạy nhanh như hoắt, bỏ tôi lại một mình. Cậu bé chạy tới đỡ tôi dậy. Bàn tay cậu ấm áp. Kể từ khi bà mất, đây là lần đầu tiên có một bàn tay dịu dàng chạm vào tôi, kéo tôi đứng lên từ nền đất lạnh. Tôi cảm thấy như có luồng ánh sáng phát ra từ cậu ấy, thực sự cậu ấy rất ngầu.",
+                next: "yen_8_talk"
+            },
+            "yen_8_talk": {
+                chapter: 1,
+                sceneTitle: "Lời ngỏ của cậu bạn dễ thương",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-indigo-800",
+                visual: "nam_blush",
+                speaker: "Cậu bé",
+                speakerStyle: "from-amber-400 to-orange-500 text-slate-950",
+                text: "— Cậu có sao không?\n— À, mình không sao. – Tôi đáp lại, giọng hơi run – Mình cảm ơn cậu rất nhiều nhé.\nBỗng nhiên tôi thấy cậu ấy đỏ mặt, trông dễ thương thật đấy. Cậu ấy run run nói:\n— Thấy cậu như thế này thì không sao rồi. Mà.. Mà cậu có .. muốn làm bạn cùng tớ .. không?",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Mở lòng hay khép lại?",
+                        prompt: "Một người tuyệt vời như cậu ấy lại muốn kết bạn với một đứa bị ruồng bỏ như Yên...",
+                        options: [
+                            { text: "Gạt bỏ tự ti, mở lòng đồng ý làm bạn với cậu ấy (+35 Hy vọng)", stat1: -15, stat2: 35, next: "yen_9_accept" },
+                            { text: "Sợ cậu ấy sẽ thất vọng khi biết hoàn cảnh của mình, lắc đầu từ chối (+25 Bóng tối)", stat1: 25, stat2: -20, next: "yen_bad_run_1" }
+                        ]
+                    }
+                ]
+            },
+            "yen_bad_run_1": {
+                chapter: 1,
+                sceneTitle: "Lời từ chối đẫm nước mắt",
+                branchName: "Nhánh: Khép kín",
+                bg: "from-slate-900 via-indigo-950 to-black",
+                visual: "yen_darkness",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "'Tớ không xứng làm bạn với cậu đâu...' — Tôi cúi gằm mặt nói khẽ rồi chạy thật nhanh khỏi con phố, bỏ lại ánh mắt ngỡ ngàng của cậu bé tốt bụng phía sau.",
+                endingId: "yen_bad_run"
+            },
+            "yen_9_accept": {
+                chapter: 1,
+                sceneTitle: "Lần đầu tiên có bạn",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-purple-800",
+                visual: "yen_smile_bright",
+                speaker: "Yên & Nam",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "— Ừm, cậu muốn làm bạn với mình á.\n— Ừm.. Ừm đúng rồi – Cậu ấy trả lời, có vẻ khá ngại ngùng – Thế.. thế cậu không muốn sao?\n— Không đâu, chỉ là vì lần đầu tiên có người nói muốn làm bạn với mình nên mình hơi vui. Nên nếu cậu muốn thì mình đồng ý thôi.",
+                next: "yen_10_names"
+            },
+            "yen_10_names": {
+                chapter: 1,
+                sceneTitle: "Cái tên Nam",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-purple-800",
+                visual: "both_happy",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "— Cảm ơn cậu – Cậu ấy nói – Mà cậu tên gì? Mình tên là Nam. Rất vui khi được làm bạn với cậu.\nThì ra cậu ấy tên là Nam, tôi liền sáng mắt, tôi liền nói:\n— Mình tên Yên. Mình cũng vui khi được làm bạn cùng cậu.",
+                next: "yen_11_end"
+            },
+            "yen_11_end": {
+                chapter: 1,
+                sceneTitle: "Mong ngày mai đến thật nhanh",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-rose-500 to-indigo-950",
+                visual: "sunset_farewell",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Thế là chúng tôi chào tạm biệt nhau rồi về. Trên con đường đi bộ quen thuộc, lòng tôi không còn trĩu nặng như mọi khi. Tôi nhẩm đi nhẩm lại cái tên 'Nam'. Cậu ấy là người bạn đầu tiên, là người duy nhất kéo tôi ra khỏi vũng lầy. Lần đầu tiên sau rất lâu, tôi mong ngày mai đến thật nhanh.",
+                endingId: "yen_true"
+            },
+
+            // ================= CHAPTER 2: TUYẾN CỦA NAM =================
+            "c2_nam_1": {
+                chapter: 2,
+                sceneTitle: "Người bạn hàng xóm",
+                branchName: "Chính tuyến",
+                bg: "from-sky-500 via-amber-300 to-rose-400",
+                visual: "window_across",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Từ hôm đó hai chúng tôi gặp nhau nhiều hơn. Tính cách cậu ấy khá hiền lành và hơi vụng về. Tôi còn biết được rằng nhà của Yên gần nhà tôi nên hai đứa thường qua nhà nhau chơi.",
+                next: "c2_nam_2"
+            },
+            "c2_nam_2": {
+                chapter: 2,
+                sceneTitle: "Cùng nhau lớn lên",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-orange-300 to-sky-600",
+                visual: "both_happy",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Bố mẹ thấy tôi nói chuyện nhiều hơn đã cảm thấy rất vui. Cậu ấy và tôi học giỏi như nhau nên cả hai đã giúp nhau tiến bộ lên rất nhiều. Theo đó tình cảm tôi dành cho cậu ấy càng nhiều hơn qua những ngày tháng đó.",
+                next: "c2_nam_3"
+            },
+            "c2_nam_3": {
+                chapter: 2,
+                sceneTitle: "Những món quà sinh nhật",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-pink-400 to-amber-300",
+                visual: "teddy_gift",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Mỗi lần sinh nhật Yên, tôi thường tặng gấu bông và những tấm thiệp chúc mừng. Mỗi lần nhận quà từ tôi, cậu ấy đều rất vui và ôm tôi thật chặt. Còn sinh nhật tôi, cậu ấy không bỏ lỡ buổi nào để đến dự. Những ngày tháng tươi đẹp ấy, ôi thật tuyệt biết bao!",
+                next: "c2_nam_4"
+            },
+            "c2_nam_4": {
+                chapter: 2,
+                sceneTitle: "Những năm tháng Cấp 2",
+                branchName: "Chính tuyến",
+                bg: "from-sky-600 via-indigo-500 to-rose-500",
+                visual: "yen_sparkle",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Khi lên cấp 2, chúng tôi vẫn thân nhau như hình và bóng. Cậu ấy lúc đó có ngoại hình xinh nhất trường, ai cũng khen cậu ấy, cũng muốn làm bạn với cậu ấy. Nhưng có lẽ vì bị ảnh hưởng từ lúc đó nên cậu ấy khá sợ về việc kết bạn.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Sự tinh tế của Nam",
+                        prompt: "Nhìn Yên luôn dè chừng và lảng tránh mọi người xung quanh ở trường cấp 2, Nam sẽ làm gì?",
+                        options: [
+                            { text: "Luôn ở bên cạnh, nhẹ nhàng động viên: 'Nếu có điều gì muốn tâm sự hãy nói với mình' (+25 Rung động)", stat1: 25, stat2: 20, next: "c2_nam_5_comfort" },
+                            { text: "Mải mê tham gia hoạt động cùng bạn bè mới, nghĩ Yên sẽ tự quen dần (-20 Rung động)", stat1: -20, stat2: 0, next: "c2_nam_bad_dist_1" }
+                        ]
+                    }
+                ]
+            },
+            "c2_nam_bad_dist_1": {
+                chapter: 2,
+                sceneTitle: "Vô tâm",
+                branchName: "Nhánh: Khoảng cách",
+                bg: "from-slate-800 via-indigo-950 to-black",
+                visual: "yen_lonely_house",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "Nam ngày càng bận rộn với nhóm bạn mới ở trường. Mỗi lần quay lại nhìn, ánh mắt Yên càng thêm xa cách và u uất. Cánh cửa sổ đối diện dần khép lại lúc nào không hay...",
+                endingId: "c2_nam_bad_distance"
+            },
+            "c2_nam_5_comfort": {
+                chapter: 2,
+                sceneTitle: "Nụ cười tỏa nắng",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-pink-500",
+                visual: "yen_smile_bright",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "Tôi thường động viên cậu ấy rằng:\n— Nếu cậu có điều gì muốn tâm sự hãy nói với mình.\n— Cảm ơn cậu nha.\nÔi, lúc đó cậu ấy cười thật là xinh. Lúc tôi nhận ra thì tôi đã quá yêu cậu ấy rồi. Có vẻ tôi sẽ không có ai khác ngoài cậu.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Trái tim rung động",
+                        prompt: "Nhận ra tình cảm của mình dành cho Yên đã vượt xa mức tình bạn...",
+                        options: [
+                            { text: "Giữ chặt tình cảm trong lòng, tiếp tục làm điểm tựa bình yên cho Yên (+30 Rung động)", stat1: 30, stat2: 15, next: "c2_nam_6_end" },
+                            { text: "Nóng vội tỏ tình ngay cuối năm lớp 9 khi Yên còn đang bất ổn", stat1: 15, stat2: 10, next: "c2_nam_bad_confess_1" }
+                        ]
+                    }
+                ]
+            },
+            "c2_nam_bad_confess_1": {
+                chapter: 2,
+                sceneTitle: "Quá sớm",
+                branchName: "Nhánh: Vội vã",
+                bg: "from-indigo-900 via-rose-950 to-black",
+                visual: "nam_blush",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-rose-400 to-pink-600 text-white",
+                text: "Lời tỏ tình bất ngờ khiến Yên hoảng sợ trước viễn cảnh mất đi tình bạn duy nhất nếu đổ vỡ. Cô bé lùi lại trong nước mắt, để lại sự ngượng ngùng bao trùm lên cả hai suốt những năm tháng sau đó.",
+                endingId: "c2_nam_bad_confess"
+            },
+            "c2_nam_6_end": {
+                chapter: 2,
+                sceneTitle: "Bóng mây Cấp 3",
+                branchName: "Chính tuyến",
+                bg: "from-slate-900 via-rose-950 to-black",
+                visual: "broken_thread_omen",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Nhưng khi lên cấp 3, một chuyện đã xảy ra khiến tình bạn chúng tôi đã chấm dứt.",
+                endingId: "c2_nam_true"
+            },
+
+            // ================= CHAPTER 2: TUYẾN CỦA YÊN =================
+            "c2_yen_1": {
+                chapter: 2,
+                sceneTitle: "Trang đầu nhật ký",
+                branchName: "Chính tuyến",
+                bg: "from-indigo-950 via-purple-900 to-rose-900",
+                visual: "yen_diary",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Đêm đó tôi lấy ra cuốn sổ đẹp nhất mà tôi có, tôi dán nhãn và ghi: “Nhật ký của Yên”. Sau đó tôi mở trang đầu tiên ra, viết những dòng chữ thật đẹp:\n— “Ngày XX/XX/XXXX, một cậu bé đã cứu mình và nói rằng muốn làm bạn với mình. Mình rất vui, lần đầu tiên có người chịu làm bạn với mình. Mình thực sự sẽ không cô đơn nữa.”",
+                next: "c2_yen_2"
+            },
+            "c2_yen_2": {
+                chapter: 2,
+                sceneTitle: "Khung cửa sổ đối diện",
+                branchName: "Chính tuyến",
+                bg: "from-amber-400 via-rose-300 to-sky-500",
+                visual: "window_across",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Qua ngày hôm sau, tôi dậy sớm, lần đầu tiên sau khi bà mất, tôi lại muốn đi học đến vậy. Khi tôi mở cửa sổ ra để đón gió, thì đụng phải ánh mắt của Nam ở ngôi nhà đối diện. Thì ra nhà của Nam nằm ngay đối diện nhà tôi, chỉ cách nhau một con đường nhỏ mọc đầy hoa dại.",
+                next: "c2_yen_3"
+            },
+            "c2_yen_3": {
+                chapter: 2,
+                sceneTitle: "Ánh đèn vàng ấm áp",
+                branchName: "Chính tuyến",
+                bg: "from-slate-950 via-indigo-950 to-amber-900/70",
+                visual: "window_across",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Kể từ năm 9 tuổi đó, cửa sổ phòng học của tôi luôn mở hướng về phía nhà cậu. Bố mẹ tôi vẫn vậy, những chuyến công tác của họ ngày một dài hơn... Nhưng mỗi khi bóng tối ập xuống, tôi sẽ tắt đèn phòng mình, ngồi bó gối bên bậu cửa sổ để ngắm nhìn ánh đèn vàng ấm áp hắt ra từ phòng của Nam.",
+                minigame: {
+                    type: "window_signal",
+                    title: "Tín Hiệu Qua Khung Cửa Sổ",
+                    desc: "Chạm vào khung cửa sổ nhà Nam để gửi tín hiệu chào buổi tối qua màn đêm!",
+                    successNext: "c2_yen_4",
+                    failNext: "c2_yen_4"
+                }
+            },
+            "c2_yen_4": {
+                chapter: 2,
+                sceneTitle: "Những trang viết mang tên Nam",
+                branchName: "Chính tuyến",
+                bg: "from-purple-950 via-rose-900 to-amber-800",
+                visual: "yen_diary",
+                speaker: "Nhật ký của Yên",
+                speakerStyle: "from-pink-400 to-rose-600 text-white",
+                text: "— “Ngày XX/XX/XXXX, hôm nay mình đến sớm hơn mọi ngày, đương nhiên không phải vì chăm học rồi, mà thực sự mình chỉ muốn gặp Nam thôi”.\n— “Ngày XX/XX/XXXX, hôm nay Nam vẫy tay với mình, mình vui quá. Suốt ngày hôm nay, mình cảm thấy rất phấn khởi, có lẽ là sự ‘tiếp động cơ’ từ Nam”.\n— “Ngày XX/XX/XXXX, hôm nay Nam lần đầu tiên sang nhà mình chơi, mình đã dọn phòng rất kỹ. Nhưng do mình ngại quá nên giả vờ bình thường như mọi ngày”.",
+                next: "c2_yen_5"
+            },
+            "c2_yen_5": {
+                chapter: 2,
+                sceneTitle: "Vật thế thân",
+                branchName: "Chính tuyến",
+                bg: "from-rose-900 via-pink-900 to-slate-950",
+                visual: "teddy_gift",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Mỗi lần đến sinh nhật tôi, Nam đều tặng một con gấu bông tôi thích và những tấm thiệp chúc mừng. Những con gấu bông đó, đối với tôi, không chỉ là đồ chơi bình thường mà chính là “vật thế thân” của cậu ấy. Mỗi đêm đối mặt căn phòng trống trải, tôi lại ôm các gấu bông của Nam để tìm kiếm hơi ấm.",
+                next: "c2_yen_6"
+            },
+            "c2_yen_6": {
+                chapter: 2,
+                sceneTitle: "Chiếc kén Cấp 2",
+                branchName: "Chính tuyến",
+                bg: "from-slate-900 via-purple-950 to-rose-950",
+                visual: "yen_sparkle",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Lên Cấp 2, ai cũng khen tôi xinh, ai cũng muốn làm bạn với tôi. Nhưng vết thương năm 9 tuổi chưa bao giờ lành miệng. Tôi đẩy tất cả ra xa, tự nhốt mình vào chiếc kén cô độc: Thế giới của tôi chỉ cần một mình Nam là đủ rồi. Còn tôi chỉ biết mỉm cười giấu đi sự ích kỷ đang lớn dần trong lồng ngực.",
+                next: "c2_yen_7_letter"
+            },
+            "c2_yen_7_letter": {
+                chapter: 2,
+                sceneTitle: "Phong thư màu hồng",
+                branchName: "Chính tuyến",
+                bg: "from-zinc-950 via-rose-950 to-red-950",
+                visual: "pink_love_letter",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-red-400 to-rose-600 text-white",
+                shake: true,
+                text: "Cho đến một ngày cuối năm lớp 9, tôi tình cờ bắt gặp một bạn nữ thẹn thùng nhét vào hộc bàn của Nam một bức thư tình phong thư màu hồng. Khoảnh khắc nhìn Nam mỉm cười nhận lấy nó, một luồng khí lạnh ngắt bóp nghẹt lấy tim tôi.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Cơn ghen bóp nghẹt",
+                        prompt: "Nhìn Nam mỉm cười cầm phong thư màu hồng trên tay, lồng ngực Yên đau nhói...",
+                        options: [
+                            { text: "Cắn chặt môi kìm nén, lặng lẽ quay đi để đêm về khóc ướt trang nhật ký (+25 Bóng tối)", stat1: 25, stat2: -10, next: "c2_yen_8_cry" },
+                            { text: "Mất bình tĩnh, lao tới giật phăng lá thư tình và xé nát trước mặt Nam! (+50 Bóng tối)", stat1: 50, stat2: -30, next: "c2_yen_bad_letter_1" }
+                        ]
+                    }
+                ]
+            },
+            "c2_yen_bad_letter_1": {
+                chapter: 2,
+                sceneTitle: "Vỡ vụn",
+                branchName: "Nhánh: Mất kiểm soát",
+                bg: "from-red-950 via-black to-slate-950",
+                visual: "pink_love_letter",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-red-600 to-rose-900 text-white",
+                shake: true,
+                text: "Những mảnh giấy hồng rơi lả tả xuống sàn lớp. Ánh mắt sững sờ và thất vọng của Nam như nhát dao đâm thẳng vào tim Yên. Cả hai không còn nói với nhau lời nào kể từ buổi chiều định mệnh ấy.",
+                endingId: "c2_yen_bad_letter"
+            },
+            "c2_yen_8_cry": {
+                chapter: 2,
+                sceneTitle: "Nước mắt nhòe trang giấy",
+                branchName: "Chính tuyến",
+                bg: "from-slate-950 via-indigo-950 to-black",
+                visual: "yen_diary",
+                speaker: "Nhật ký của Yên",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Đêm đó, những giọt nước mắt đầu tiên đã làm nhòe đi trang nhật ký:\n— “Ngày XX/XX/XXXX, Nam hôm nay lại cười nói với những đứa con gái khác. Mình ghét sự ích kỷ này của bản thân. Nhưng mình sợ lắm... Nếu không có Nam, mình phải sống tiếp thế nào đây?”",
+                next: "c2_yen_9_realize"
+            },
+            "c2_yen_9_realize": {
+                chapter: 2,
+                sceneTitle: "Sự thật bàng hoàng",
+                branchName: "Chính tuyến",
+                bg: "from-rose-950 via-purple-950 to-amber-900/60",
+                visual: "window_across",
+                speaker: "Yên",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "Đúng lúc đó, ánh đèn vàng đối diện lại thắp sáng, bóng Nam vẫy tay cười rạng rỡ với tôi. Tôi áp cuốn nhật ký chặt vào lồng ngực, thì thầm trong nước mắt:\n— Thì ra, mình đã yêu cậu ấy từ rất lâu rồi... Yêu đến mức cậu ấy trở thành lý do duy nhất để mình tồn tại.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Chấp nhận hay trốn chạy?",
+                        prompt: "Nhận ra tình yêu đã hóa thành cơn bão lòng không thể quay đầu...",
+                        options: [
+                            { text: "Giữ chặt bí mật này trong tim, bước tiếp cùng Nam lên Cấp 3 (+30 Bóng tối)", stat1: 30, stat2: 10, next: "c2_yen_10_highschool" },
+                            { text: "Quá sợ hãi con người ích kỷ của mình, tự tay đốt bỏ cuốn nhật ký và rời xa Nam", stat1: -10, stat2: -25, next: "c2_yen_bad_burn_1" }
+                        ]
+                    }
+                ]
+            },
+            "c2_yen_bad_burn_1": {
+                chapter: 2,
+                sceneTitle: "Tro tàn",
+                branchName: "Nhánh: Từ bỏ",
+                bg: "from-zinc-950 via-orange-950 to-black",
+                visual: "yen_darkness",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "Ngọn lửa nuốt chửng từng trang viết thanh xuân. Ngày hôm sau, tấm rèm cửa sổ nhà Yên buông xuống vĩnh viễn. Cô chọn cách tự biến mất để không bao giờ làm tổn thương ánh sáng của đời mình.",
+                endingId: "c2_yen_bad_burn"
+            },
+            "c2_yen_10_highschool": {
+                chapter: 2,
+                sceneTitle: "Khối u tăm tối",
+                branchName: "Chính tuyến",
+                bg: "from-slate-950 via-purple-950 to-red-950",
+                visual: "yen_darkness",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Lên Cấp 3, Nam như một thỏi nam châm thu hút mọi ánh nhìn. Càng nhìn cậu ấy có thêm nhiều bạn mới, lòng tôi càng thắt lại. Không, tôi không thể mất Nam. Cậu ấy là mạng sống của tôi.",
+                next: "c2_yen_11_plan"
+            },
+            "c2_yen_11_plan": {
+                chapter: 2,
+                sceneTitle: "Phương án cuối cùng",
+                branchName: "Chính tuyến",
+                bg: "from-black via-red-950 to-slate-950",
+                visual: "secret_drawer_plan",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-red-500 to-rose-700 text-white",
+                text: "Vào một đêm cuối năm lớp 10, một ý nghĩ điên rồ và đen tối bất chợt lóe lên trong đầu tôi. Tôi mở nhật ký, nắn nót viết lại cái kế hoạch mà lý trí của một kẻ bình thường sẽ không bao giờ dám nghĩ tới rồi giấu kín nó vào đáy ngăn kéo.",
+                next: "c2_yen_12_end"
+            },
+            "c2_yen_12_end": {
+                chapter: 2,
+                sceneTitle: "Thà bị ghét còn hơn mất cậu",
+                branchName: "Chính tuyến",
+                bg: "from-black via-rose-950 to-zinc-950",
+                visual: "broken_thread_omen",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-red-500 to-rose-700 text-white",
+                text: "Đó là phương án cuối cùng của tôi. Nếu Nam thực sự muốn bỏ rơi tôi, tôi sẽ dùng cách này để giữ cậu ấy lại bên mình mãi mãi. Tôi thà bị cậu ấy ghét, còn hơn phải sống trong một thế giới không có Nam...",
+                endingId: "c2_yen_true"
+            },
+
+            // ================= CHAPTER 3: TUYẾN CỦA NAM =================
+            "c3_nam_1": {
+                chapter: 3,
+                sceneTitle: "Năm tháng Cấp 3",
+                branchName: "Chính tuyến",
+                bg: "from-sky-700 via-indigo-800 to-slate-950",
+                visual: "both_talk_normal",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Khi lên cấp 3 thì mối quan hệ chúng tôi vẫn thế. Nhưng tâm lý của cậu ấy có vẻ hơi bất ổn nên tôi thường bên cạnh cậu ấy để nghe tâm sự. Có vài người còn nghĩ chúng tôi đang hẹn hò với nhau.",
+                next: "c3_nam_2"
+            },
+            "c3_nam_2": {
+                chapter: 3,
+                sceneTitle: "Lời phủ nhận vô tình",
+                branchName: "Chính tuyến",
+                bg: "from-slate-800 via-zinc-900 to-black",
+                visual: "rain_rejection",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                thunder: true,
+                text: "Tôi liền nói:\n— Không, chúng tôi chỉ là bạn thôi.\nKhi tôi nói câu đó, mặt cậu ấy trông buồn đi hẳn. Theo đó mối quan hệ của chúng tôi dần xa cách. Tôi biết đây là lỗi của tôi nên tôi sẽ đi xin lỗi cậu ấy một cách chân thành.",
+                next: "c3_nam_3"
+            },
+            "c3_nam_3": {
+                chapter: 3,
+                sceneTitle: "Cuộc gọi ngày định mệnh",
+                branchName: "Chính tuyến",
+                bg: "from-indigo-950 via-slate-900 to-black",
+                visual: "sleeping_potion_cup",
+                speaker: "Nam (Tự sự)",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Vào cái ngày định mệnh ấy, khi tôi nghe cuộc gọi của cậu ấy nói rằng tôi qua đi để chúng tôi nói chuyện, tôi liền qua nhà. Khi vào nhà, cậu ấy mời tôi uống nước. Sau khi uống xong, bỗng nhiên tôi cảm thấy buồn ngủ và thiếp đi.",
+                next: "c3_nam_4_wake"
+            },
+            "c3_nam_4_wake": {
+                chapter: 3,
+                sceneTitle: "Tỉnh giấc trong căn phòng khóa kín",
+                branchName: "Chính tuyến",
+                bg: "from-red-950 via-zinc-950 to-black",
+                visual: "knife_confrontation",
+                speaker: "Nam",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                shake: true,
+                text: "Khi tỉnh dậy, tôi thấy tôi bị trói trên giường. Cậu ấy đang cầm một con dao trên tay. Tôi liền sợ hãi, nói:\n— Yên… Yên, cậu đang làm.. làm gì vậy? Đừng làm gì mình sợ mà.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Đối mặt với nỗi sợ",
+                        prompt: "Bị trói chặt trên giường trước Yên đang cầm dao với ánh mắt tuyệt vọng, Nam phản ứng thế nào?",
+                        options: [
+                            { text: "Cố giữ bình tĩnh, lắng nghe nỗi đau trong lời nói của Yên (+25 Dũng khí)", stat1: 15, stat2: 25, next: "c3_nam_5_listen" },
+                            { text: "Hoảng loạn gào thét, vùng vẫy dữ dội tìm cách giật đứt dây trói (-35 Dũng khí)", stat1: -20, stat2: -35, next: "c3_nam_bad_panic_1" }
+                        ]
+                    }
+                ]
+            },
+            "c3_nam_bad_panic_1": {
+                chapter: 3,
+                sceneTitle: "Mất kiểm soát",
+                branchName: "Nhánh: Hoảng loạn",
+                bg: "from-red-950 via-black to-zinc-950",
+                visual: "knife_confrontation",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-red-600 to-rose-900 text-white",
+                shake: true,
+                text: "Tiếng gào thét hoảng sợ của Nam như nhát búa giáng thẳng vào tâm trí vốn đã rạn nứt của Yên. Tưởng rằng Nam thực sự ghê tởm mình, Yên bật khóc trong tuyệt vọng...",
+                endingId: "c3_nam_bad_panic"
+            },
+            "c3_nam_5_listen": {
+                chapter: 3,
+                sceneTitle: "Lưỡi dao kề cổ",
+                branchName: "Chính tuyến",
+                bg: "from-red-950 via-rose-950 to-black",
+                visual: "knife_confrontation",
+                speaker: "Yên",
+                speakerStyle: "from-rose-500 to-purple-700 text-white",
+                text: "Cậu ấy nói một cách yếu ớt:\n— Cậu biết không, cậu đã dần xa lánh mình đã khiến mình cô đơn lắm không. Mình sợ bị cậu ghét nên đã quyết định trói cậu lại. Mình muốn cậu ở bên mình mãi mãi. Còn nếu cậu đã ghét mình đến vậy thì mình sẽ tự sát cho cậu xem.",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Lời nói từ trái tim",
+                        prompt: "Yên kè lưỡi dao sắc lạnh vào cổ. Chỉ một giây chần chừ nữa là mất tất cả!",
+                        options: [
+                            { text: "Khẩn thiết van xin Yên đừng chết và bộc bạch trọn vẹn tình yêu từ năm 9 tuổi! (+40 Rung động)", stat1: 40, stat2: 30, next: "c3_nam_6_confess" },
+                            { text: "Nói dối qua loa 'Mình không ghét cậu đâu, bỏ dao xuống đi' để tìm cách thoát thân", stat1: -30, stat2: -10, next: "c3_nam_bad_lie_1" }
+                        ]
+                    }
+                ]
+            },
+            "c3_nam_bad_lie_1": {
+                chapter: 3,
+                sceneTitle: "Ánh mắt nhìn thấu tất cả",
+                branchName: "Nhánh: Dối trá",
+                bg: "from-zinc-950 via-red-950 to-black",
+                visual: "yen_cry_tears",
+                speaker: "Yên",
+                speakerStyle: "from-rose-600 to-red-900 text-white",
+                text: "'Cậu đang nói dối... Suốt 10 năm qua, tớ thuộc từng ánh mắt của cậu mà.' — Nụ cười bi thương nở trên môi Yên khi mọi hy vọng cuối cùng vụt tắt.",
+                endingId: "c3_nam_bad_lie"
+            },
+            "c3_nam_6_confess": {
+                chapter: 3,
+                sceneTitle: "Tiếng sét ái tình",
+                branchName: "Chính tuyến",
+                bg: "from-rose-900 via-amber-900/70 to-slate-950",
+                visual: "yen_cry_tears",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "Tôi nói nhẹ nhàng nhưng đầy đau buồn:\n— Xin cậu đấy, đừng chết. Mình không thấy người mình yêu thương phải chết đâu. Xin cậu đấy!\n— Cậu nói gì vậy, người cậu yêu?\n— Mình yêu cậu, Yên à. Cậu biết vì sao lúc đó tớ làm bạn với cậu không, là vì mình đã trúng phải “tiếng sét ái tình” với cậu từ đó, cậu chính là người đã mở con tim lạnh giá của tớ trở nên ấm áp hơn. Vì vậy xin cậu đừng chết, mình không thể sống thiếu cậu được.",
+                next: "c3_nam_7_explain"
+            },
+            "c3_nam_7_explain": {
+                chapter: 3,
+                sceneTitle: "Hóa giải hiểu lầm",
+                branchName: "Chính tuyến",
+                bg: "from-amber-500/40 via-rose-500/40 to-indigo-950",
+                visual: "both_happy",
+                speaker: "Nam",
+                speakerStyle: "from-sky-400 to-blue-500 text-slate-950",
+                text: "Cậu ấy khóc nức nở hỏi tại sao thời gian qua tôi lại xa cách. Tôi vội đặt tay lên má ửng đỏ của cậu ấy, nhẹ nhàng nói:\n— Mình gần đây không phải muốn xa cách cậu đâu, cũng chỉ vì mình muốn sửa những sai lầm của bản thân để có thể vừa xin lỗi vừa tỏ tình cậu mà thôi. Tình cảm của mình dành cho cậu là chính từ tận đáy lòng, mình muốn làm người quan trọng nhất của cậu.",
+                next: "c3_nam_8_embrace"
+            },
+            "c3_nam_8_embrace": {
+                chapter: 3,
+                sceneTitle: "Buông bỏ lưỡi dao",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-purple-900",
+                visual: "warm_embrace",
+                speaker: "Yên",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "Cậu ấy liền thả dao xuống, lao vào ôm chầm lấy tôi, tôi xoa đầu cậu ấy. Cậu ấy vừa nói vừa khóc:\n— Mình cũng yêu cậu nhiều lắm, vì cậu quá xa cách nên mình sợ lắm... Mình muốn được bên cậu mãi mãi cơ, vì cậu là cứu tinh của cuộc đời mình. Xin lỗi cậu rất nhiều vì những hành động mình làm với cậu.",
+                next: "c3_nam_9_end"
+            },
+            "c3_nam_9_end": {
+                chapter: 3,
+                sceneTitle: "Trang mới của tình yêu",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-indigo-950",
+                visual: "warm_embrace",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "Cậu ấy liền hôn tôi, sau đó tôi bị thiếp đi. Khi tỉnh dậy, nhận ra mình đang ngủ cạnh cậu ấy, tôi liền đỏ mặt. Cậu ấy tỉnh dậy nói:\n— Mình muốn được hẹn hò với cậu được không?\n— Được.. được chứ.\nSau hôm định mệnh đó, bọn tôi đã kết thúc tình bạn từ thời tiểu học, mở ra một trang mới về những ngày hạnh phúc bên nhau.",
+                endingId: "c3_nam_true"
+            },
+
+            // ================= CHAPTER 3: TUYẾN CỦA YÊN =================
+            "c3_yen_1": {
+                chapter: 3,
+                sceneTitle: "Sợi chỉ căng nghẹt thở",
+                branchName: "Chính tuyến",
+                bg: "from-slate-900 via-purple-950 to-rose-950",
+                visual: "yen_sparkle",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Năm lớp 11, sợi chỉ buộc chặt tôi và Nam suốt mười năm qua bắt đầu bị kéo căng đến mức nghẹt thở. Những lời gán ghép của đám bạn cùng lớp vừa khiến tôi run rẩy hạnh phúc, vừa làm tôi sợ hãi tột cùng rằng ranh giới 'bạn thân' bị phá vỡ sẽ khiến Nam đẩy tôi ra xa.",
+                next: "c3_yen_2"
+            },
+            "c3_yen_2": {
+                chapter: 3,
+                sceneTitle: "Bức tường im lặng",
+                branchName: "Chính tuyến",
+                bg: "from-slate-900 via-indigo-950 to-zinc-950",
+                visual: "both_talk_normal",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Trước mặt mọi người, tôi chỉ biết cúi đầu siết chặt vạt áo đồng phục. Tôi âm thầm quan sát Nam, nín thở chờ đợi một phản ứng. Nhưng Nam luôn im lặng — sự im lặng dịu dàng mà lạnh ngắt như một bức tường vô hình ngăn cách hai thế giới.",
+                next: "c3_yen_3_rain"
+            },
+            "c3_yen_3_rain": {
+                chapter: 3,
+                sceneTitle: "Sáu chữ như bản án tử hình",
+                branchName: "Chính tuyến",
+                bg: "from-zinc-950 via-slate-900 to-black",
+                visual: "rain_rejection",
+                speaker: "Nam",
+                speakerStyle: "from-slate-500 to-zinc-700 text-white",
+                thunder: true,
+                shake: true,
+                text: "Chiều mưa giông dưới hiên sảnh hiệu bộ, khi cậu bạn đội bóng rổ trêu chọc hỏi quan hệ của hai đứa, tôi thầm cầu xin trong lòng. Nhưng Nam chỉ nở nụ cười trừ, xua tay buông một câu nhẹ tênh:\n— Không, tụi tao chỉ là bạn thôi. Bạn thân từ nhỏ ấy mà.",
+                next: "c3_yen_4_diary"
+            },
+            "c3_yen_4_diary": {
+                chapter: 3,
+                sceneTitle: "Những trang nhật ký đẫm lệ",
+                branchName: "Chính tuyến",
+                bg: "from-black via-red-950 to-slate-950",
+                visual: "yen_diary",
+                speaker: "Nhật ký của Yên",
+                speakerStyle: "from-red-500 to-rose-700 text-white",
+                text: "Đêm đó, trang nhật ký ướt nhòe nước mắt:\n— “Ngày XX/XX/XXXX, Nam thực sự phủ định mối quan hệ của chúng mình. Hay mình sẽ thực hiện kế hoạch từ 1 năm trước... Ngày XX/XX/XXXX, mình đã mua thuốc ngủ và tìm thấy dây thừng trong nhà kho, nhưng không hiểu sao tim mình lại đau đến vậy?”",
+                next: "c3_yen_5_call"
+            },
+            "c3_yen_5_call": {
+                chapter: 3,
+                sceneTitle: "Viên thuốc nhỏ trên lòng bàn tay",
+                branchName: "Chính tuyến",
+                bg: "from-zinc-950 via-rose-950 to-black",
+                visual: "sleeping_potion_cup",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-500 to-purple-700 text-white",
+                text: "Vào ngày định mệnh ấy, tôi gọi Nam qua nhà. Khi đi rót nước, đôi tay tôi run đến mức nước sánh ra ngoài. Tôi nhìn chằm chằm vào viên thuốc nhỏ trên lòng bàn tay — nó nhẹ đến mức vô lý so với sức nặng của quyết định này...",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 1: Không còn đường lui",
+                        prompt: "Tiếng Nam dịch chuyển ngoài phòng khách. Đôi tay Yên run rẩy trên ly nước...",
+                        options: [
+                            { text: "Thả viên thuốc vào cốc nước: 'Nam ơi, xin lỗi cậu... Mình buộc phải làm thế này' (+35 Bóng tối)", stat1: 35, stat2: 0, next: "c3_yen_6_tie" },
+                            { text: "Bật khóc hất đổ viên thuốc, không nỡ làm hại người mình yêu thương nhất (-20 Bóng tối)", stat1: -20, stat2: 10, next: "c3_yen_bad_hesitate_1" }
+                        ]
+                    }
+                ]
+            },
+            "c3_yen_bad_hesitate_1": {
+                chapter: 3,
+                sceneTitle: "Ly nước nguội lạnh",
+                branchName: "Nhánh: Chùn bước",
+                bg: "from-slate-900 via-indigo-950 to-black",
+                visual: "yen_cry_tears",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-slate-400 to-slate-600 text-slate-950",
+                text: "Tôi bưng ra một ly nước lọc bình thường, mỉm cười bảo chỉ muốn trả lại cuốn sách cũ rồi tiễn Nam về. Tuần sau đó, tôi xin chuyển trường theo công việc của bố mẹ, mang theo bí mật tình yêu chôn vùi mãi mãi.",
+                endingId: "c3_yen_bad_hesitate"
+            },
+            "c3_yen_6_tie": {
+                chapter: 3,
+                sceneTitle: "Lưỡi dao và giọt nước mắt",
+                branchName: "Chính tuyến",
+                bg: "from-red-950 via-black to-zinc-950",
+                visual: "knife_confrontation",
+                speaker: "Yên",
+                speakerStyle: "from-rose-500 to-red-700 text-white",
+                text: "Nam thiếp đi, tôi đưa cậu lên giường, trói hai tay cậu lại và cầm con dao ngồi chờ. Khi Nam tỉnh dậy hoảng sợ, tôi kè dao vào cổ mình:\n— Mình sợ bị cậu ghét nên đã quyết định trói cậu lại. Mình muốn cậu ở bên mình mãi mãi. Còn nếu cậu đã ghét mình đến vậy thì mình sẽ tự sát cho cậu xem.",
+                next: "c3_yen_7_confession_hear"
+            },
+            "c3_yen_7_confession_hear": {
+                chapter: 3,
+                sceneTitle: "Người mình yêu thương",
+                branchName: "Chính tuyến",
+                bg: "from-rose-950 via-purple-950 to-amber-900/50",
+                visual: "yen_cry_tears",
+                speaker: "Nam & Yên",
+                speakerStyle: "from-amber-400 to-rose-500 text-slate-950",
+                text: "Nam bỗng buồn đi và khẩn thiết nói:\n— Xin cậu đấy, đừng chết. Mình không thấy người mình yêu thương phải chết đâu.\n— Mình yêu cậu, Yên à. Cậu biết vì sao lúc đó tớ làm bạn với cậu không, là vì mình đã trúng phải “tiếng sét ái tình” với cậu từ đó...",
+                minigame: {
+                    type: "gaze_truth",
+                    title: "Nhìn Thấu Ánh Mắt Mười Năm",
+                    desc: "Chạm để đối diện trực tiếp với ánh mắt của Nam và tìm kiếm sự thật đằng sau lời tỏ tình!",
+                    successNext: "c3_yen_8_choice",
+                    failNext: "c3_yen_8_choice"
+                }
+            },
+            "c3_yen_8_choice": {
+                chapter: 3,
+                sceneTitle: "Không có sự giả dối nào",
+                branchName: "Chính tuyến",
+                bg: "from-rose-900 via-amber-800/60 to-slate-950",
+                visual: "yen_cry_tears",
+                speaker: "Yên (Nội tâm)",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "Suốt mười năm, tôi đã học thuộc từng biểu cảm trên khuôn mặt này. Và lúc này, tôi không tìm thấy sự giả dối nào trong đó cả. Chỉ có nỗi sợ. Cậu ấy đang sợ mất tôi. Nam đặt bàn tay bị trói lên má tôi, xin lỗi vì đã khiến tôi cô đơn...",
+                choices: [
+                    {
+                        tag: "Ngã rẽ 2: Phá vỡ chiếc kén bóng tối",
+                        prompt: "Toàn bộ nỗi uất ức và ý định đen tối trong lòng Yên đang vỡ vụn...",
+                        options: [
+                            { text: "Thả con dao xuống, òa khóc ôm chầm lấy Nam và đặt lên môi cậu một nụ hôn (+50 Hy vọng)", stat1: -50, stat2: 50, next: "c3_yen_9_kiss" },
+                            { text: "Vẫn không dám tin vào hạnh phúc, thu mình lại và khóa chặt cửa phòng mãi mãi (+40 Bóng tối)", stat1: 40, stat2: -40, next: "c3_yen_bad_cage_1" }
+                        ]
+                    }
+                ]
+            },
+            "c3_yen_bad_cage_1": {
+                chapter: 3,
+                sceneTitle: "Bóng tối vĩnh cửu",
+                branchName: "Nhánh: Ám ảnh",
+                bg: "from-black via-zinc-950 to-red-950",
+                visual: "broken_thread_omen",
+                speaker: "Dẫn chuyện",
+                speakerStyle: "from-red-600 to-rose-900 text-white",
+                text: "Nỗi sợ bị phản bội đã ăn sâu vào tâm trí Yên. Cô buông dao nhưng không cởi trói cho Nam, lặng lẽ kéo rèm che kín ánh đèn vàng ngoài cửa sổ...",
+                endingId: "c3_yen_bad_cage"
+            },
+            "c3_yen_9_kiss": {
+                chapter: 3,
+                sceneTitle: "Cơn bão lòng tan biến",
+                branchName: "Chính tuyến",
+                bg: "from-rose-400 via-amber-300 to-purple-800",
+                visual: "warm_embrace",
+                speaker: "Yên",
+                speakerStyle: "from-rose-400 to-pink-500 text-white",
+                text: "Tôi thả dao xuống, lao vào ôm chầm lấy Nam, vừa khóc nức nở vừa xin lỗi cậu ấy. Sau đó, tôi nhẹ nhàng đặt lên môi cậu một nụ hôn dài. Thuốc ngủ vẫn còn tác dụng khiến Nam chìm vào giấc ngủ an lành. Tôi mỉm cười cởi trói cho cậu ấy, nằm xuống ôm cậu ấy ngủ như những chú gấu bông trước đây.",
+                next: "c3_yen_10_end"
+            },
+            "c3_yen_10_end": {
+                chapter: 3,
+                sceneTitle: "Ánh đèn ngay bên cạnh",
+                branchName: "Chính tuyến",
+                bg: "from-amber-300 via-rose-400 to-indigo-950",
+                visual: "warm_embrace",
+                speaker: "Yên (Tự sự)",
+                speakerStyle: "from-rose-400 to-purple-600 text-white",
+                text: "Khi Nam tỉnh giấc, cậu ấy đỏ mặt và đồng ý lời ngỏ hẹn hò của tôi. Đêm hôm đó, lần đầu tiên sau rất nhiều năm, tôi không cần ôm gấu bông để ngủ nữa. Bởi vì người tôi luôn tìm kiếm đã ở ngay bên cạnh. Ngoài cửa sổ, ánh đèn vàng quen thuộc vẫn sáng. Nhưng lần này, tôi không còn phải ngắm nhìn nó từ xa nữa.",
+                endingId: "c3_yen_true"
+            }
+        };
+
+        // ==================== BIẾN TRẠNG THÁI & CHỈ SỐ TÂM LÝ ====================
+        let currentRoute = null;
+        let currentNodeId = null;
+        let isTyping = false;
+        let typingTimer = null;
+        let fullTextToType = "";
+
+        let stat1Value = 20; // Nam: Rung động | Yên: Bóng tối
+        let stat2Value = 20; // Nam: Dũng khí  | Yên: Hy vọng
+        let dialogueHistory = [];
+        let isAutoPlay = false;
+        let autoPlayTimer = null;
+
+        // ==================== HỆ THỐNG NHẠC NỀN PIANO + PAD TONE.JS ====================
+        let audioEnabled = false;
+        let pianoSynth = null;
+        let padSynth = null;
+        let bgmLoop = null;
+        let stepCounter = 0;
+
+        // Hợp âm & giai điệu du dương có chiều sâu
+        const MUSIC_THEMES = {
+            home: [
+                { chord: ["F3", "A3", "C4", "E4"], melody: "A4" },
+                { chord: ["G3", "B3", "D4", "F4"], melody: "G4" },
+                { chord: ["E3", "G3", "B3", "D4"], melody: "B4" },
+                { chord: ["A3", "C4", "E4", "G4"], melody: "E4" }
+            ],
+            sad: [
+                { chord: ["A2", "E3", "A3", "C4"], melody: "E4" },
+                { chord: ["F2", "C3", "F3", "A3"], melody: "C4" },
+                { chord: ["D2", "A2", "D3", "F3"], melody: "D4" },
+                { chord: ["E2", "B2", "E3", "G#3"], melody: "B3" }
+            ],
+            warm: [
+                { chord: ["C3", "G3", "B3", "E4"], melody: "G4" },
+                { chord: ["A2", "E3", "A3", "C4"], melody: "E4" },
+                { chord: ["F2", "C3", "F3", "A3"], melody: "A4" },
+                { chord: ["G2", "D3", "G3", "B3"], melody: "D5" }
+            ]
+        };
+        let activeMusicTheme = "home";
+
+        async function toggleAudio() {
+            if (!audioEnabled) {
+                await Tone.start();
+                if (!pianoSynth) {
+                    const reverb = new Tone.Reverb({ decay: 3.5, wet: 0.45 }).toDestination();
+                    
+                    padSynth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: "triangle" },
+                        envelope: { attack: 1.2, decay: 1.0, sustain: 0.6, release: 2.5 }
+                    }).connect(reverb);
+                    padSynth.volume.value = -20;
+
+                    pianoSynth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: "sine" },
+                        envelope: { attack: 0.05, decay: 0.8, sustain: 0.2, release: 1.8 }
+                    }).connect(reverb);
+                    pianoSynth.volume.value = -11;
+                }
+                audioEnabled = true;
+                document.getElementById("audio-icon").textContent = "🔊";
+                document.getElementById("audio-text").textContent = "Tắt nhạc";
+                startMusicLoop();
+            } else {
+                audioEnabled = false;
+                document.getElementById("audio-icon").textContent = "🔇";
+                document.getElementById("audio-text").textContent = "Bật nhạc nền";
+                if (bgmLoop) clearInterval(bgmLoop);
+            }
+        }
+
+        function startMusicLoop() {
+            if (bgmLoop) clearInterval(bgmLoop);
+            playMusicBar();
+            bgmLoop = setInterval(playMusicBar, 2400);
+        }
+
+        function playMusicBar() {
+            if (!audioEnabled || !pianoSynth || !padSynth) return;
+            const themeBars = MUSIC_THEMES[activeMusicTheme];
+            const bar = themeBars[stepCounter % themeBars.length];
+            
+            padSynth.triggerAttackRelease(bar.chord, "1n");
+            pianoSynth.triggerAttackRelease(bar.melody, "2n");
+            setTimeout(() => {
+                if (audioEnabled && pianoSynth) {
+                    const harmonyNote = bar.chord[bar.chord.length - 1];
+                    pianoSynth.triggerAttackRelease(harmonyNote, "4n", undefined, 0.5);
+                }
+            }, 1100);
+
+            stepCounter++;
+        }
+
+        function playSfxClick() {
+            if (!audioEnabled || !pianoSynth) return;
+            pianoSynth.triggerAttackRelease("E5", "32n", undefined, 0.25);
+        }
+
+        // ==================== VẼ LẠI NGOẠI HÌNH NHÂN VẬT & CẢNH QUAY CHAPTER 2 ====================
+        let svgUniqueCounter = 0;
+
+        // Vẽ phông nền Anime chi tiết cho từng cảnh
+        function renderSceneBackdrop(visualKey) {
+            const bgArt = document.getElementById("scene-backdrop-art");
+            if (!bgArt) return;
+
+            if (visualKey.includes("bully") || visualKey === "yen_stone_grip" || visualKey === "nam_shout") {
+                // Khung cảnh góc phố cũ chiều muộn với tường gạch, cột điện & hàng rào
+                bgArt.innerHTML = `
+                <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" class="w-full h-full opacity-55">
+                    <rect x="0" y="520" width="1200" height="180" fill="#0f172a"/>
+                    <!-- Tường rào góc phố -->
+                    <rect x="40" y="240" width="340" height="280" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                    <rect x="850" y="210" width="320" height="310" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                    <!-- Cột điện & dây điện chéo -->
+                    <rect x="420" y="60" width="16" height="460" fill="#090d16"/>
+                    <line x1="380" y1="100" x2="476" y2="100" stroke="#090d16" stroke-width="6"/>
+                    <path d="M0,80 Q420,140 1200,60" stroke="#090d16" stroke-width="2.5" fill="none"/>
+                    <path d="M0,105 Q420,165 1200,90" stroke="#090d16" stroke-width="2" fill="none"/>
+                </svg>`;
+            } else if (visualKey === "yen_lonely_house" || visualKey === "yen_darkness" || visualKey === "yen_diary" || visualKey === "secret_drawer_plan") {
+                // Phòng ngủ tối & ánh trăng rọi qua khung cửa sổ
+                bgArt.innerHTML = `
+                <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" class="w-full h-full opacity-50">
+                    <!-- Ánh trăng / đèn đường hắt chéo vào phòng -->
+                    <polygon points="820,120 1060,120 750,700 320,700" fill="#fde047" opacity="0.08"/>
+                    <!-- Khung cửa sổ phòng Yên -->
+                    <rect x="820" y="120" width="240" height="280" rx="8" fill="#1e1b4b" stroke="#475569" stroke-width="8"/>
+                    <line x1="940" y1="120" x2="940" y2="400" stroke="#475569" stroke-width="6"/>
+                    <line x1="820" y1="260" x2="1060" y2="260" stroke="#475569" stroke-width="6"/>
+                    <!-- Rèm cửa hai bên -->
+                    <path d="M805,110 Q835,250 810,420 L785,420 L785,110 Z" fill="#312e81"/>
+                    <path d="M1075,110 Q1045,250 1070,420 L1095,420 L1095,110 Z" fill="#312e81"/>
+                </svg>`;
+            } else {
+                // Con đường tan học & hoa anh đào / lá bay
+                bgArt.innerHTML = `
+                <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" class="w-full h-full opacity-45">
+                    <circle cx="600" cy="240" r="190" fill="#fef08a" opacity="0.22"/>
+                    <path d="M0,530 Q600,490 1200,530 L1200,700 L0,700 Z" fill="#0f172a"/>
+                    <!-- Tán cây ven đường -->
+                    <circle cx="140" cy="220" r="160" fill="#1e1b4b" opacity="0.75"/>
+                    <circle cx="1060" cy="200" r="180" fill="#1e1b4b" opacity="0.75"/>
+                    <rect x="130" y="340" width="22" height="195" fill="#090d16"/>
+                    <rect x="1050" y="340" width="24" height="195" fill="#090d16"/>
+                </svg>`;
+            }
+        }
+
+        function getCharacterSVG(type, options = {}) {
+            const { blush = false, smile = true, sad = false, glow = false, scale = "w-64 h-72 sm:w-80 sm:h-96", isTeen = false } = options;
+            const uid = ++svgUniqueCounter;
+
+            if (type === "nam") {
+                return `
+                <svg viewBox="0 0 220 280" class="${scale} vn-sprite-idle ${glow ? 'glow-light' : ''}">
+                    <defs>
+                        <radialGradient id="namAura_${uid}">
+                            <stop offset="0%" stop-color="#fde047" stop-opacity="0.55"/>
+                            <stop offset="100%" stop-color="#fde047" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="namHairGrad_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b"/>
+                            <stop offset="100%" stop-color="#0f172a"/>
+                        </linearGradient>
+                    </defs>
+                    ${glow ? `<circle cx="110" cy="120" r="105" fill="url(#namAura_${uid})"/>` : ''}
+                    <!-- Thân bán thân (Áo sơ mi học sinh / Khoác Blazer Cấp 2-3) -->
+                    <path d="M40,280 C40,185 180,185 180,280 Z" fill="${isTeen ? '#1e293b' : '#f8fafc'}"/>
+                    ${isTeen ? '<polygon points="84,188 136,188 124,280 96,280" fill="#f8fafc"/>' : ''}
+                    <path d="M84,188 L110,218 L136,188" fill="#0369a1"/>
+                    <path d="M104,210 L116,210 L114,275 L106,275 Z" fill="#e11d48"/>
+                    <!-- Cổ -->
+                    <rect x="98" y="154" width="24" height="38" rx="12" fill="#fed7aa"/>
+                    <!-- Tóc sau -->
+                    <path d="M58,108 C54,48 166,48 162,108 Z" fill="#0f172a"/>
+                    <!-- Khuôn mặt thanh tú -->
+                    <path d="M66,98 C66,62 154,62 154,98 C154,140 134,162 110,162 C86,162 66,140 66,98 Z" fill="#ffedd5"/>
+                    <!-- Tóc mái bồng bềnh -->
+                    <path d="M62,100 Q72,46 110,50 Q148,46 158,100 Q140,70 116,78 Q104,60 92,78 Q72,68 62,100 Z" fill="url(#namHairGrad_${uid})"/>
+                    <!-- Đôi mắt sáng ấm áp -->
+                    <ellipse cx="91" cy="110" rx="6.5" ry="7.8" fill="#1e293b"/>
+                    <ellipse cx="129" cy="110" rx="6.5" ry="7.8" fill="#1e293b"/>
+                    <circle cx="93.5" cy="107" r="2.6" fill="#ffffff"/>
+                    <circle cx="131.5" cy="107" r="2.6" fill="#ffffff"/>
+                    <!-- Lông mày -->
+                    <path d="M80,97 Q91,92 100,97" stroke="#1e293b" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M120,97 Q129,92 140,97" stroke="#1e293b" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <!-- Má ửng hồng -->
+                    <ellipse cx="80" cy="123" rx="9" ry="4.5" fill="#fb7185" opacity="${blush ? '0.85' : '0.25'}"/>
+                    <ellipse cx="140" cy="123" rx="9" ry="4.5" fill="#fb7185" opacity="${blush ? '0.85' : '0.25'}"/>
+                    <!-- Miệng -->
+                    ${smile 
+                        ? '<path d="M99,134 Q110,143 121,134" stroke="#9a3412" stroke-width="3" fill="none" stroke-linecap="round"/>'
+                        : '<ellipse cx="110" cy="136" rx="4.5" ry="3.5" fill="#9a3412"/>'}
+                </svg>`;
+            }
+
+            if (type === "yen") {
+                return `
+                <svg viewBox="0 0 220 280" class="${scale} vn-sprite-idle ${glow ? 'glow-light' : ''}">
+                    <defs>
+                        <radialGradient id="yenAura_${uid}">
+                            <stop offset="0%" stop-color="#fda4af" stop-opacity="0.55"/>
+                            <stop offset="100%" stop-color="#fda4af" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="yenHairLong_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e1b4b"/>
+                            <stop offset="55%" stop-color="#0f172a"/>
+                            <stop offset="100%" stop-color="#312e81"/>
+                        </linearGradient>
+                        <linearGradient id="yenEyeGrad_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e1b4b"/>
+                            <stop offset="65%" stop-color="#4338ca"/>
+                            <stop offset="100%" stop-color="#818cf8"/>
+                        </linearGradient>
+                    </defs>
+                    ${glow ? `<circle cx="110" cy="120" r="105" fill="url(#yenAura_${uid})"/>` : ''}
+
+                    <!-- Mái tóc dài óng ả buông xõa xuống tận eo -->
+                    <path d="M50,95 C30,165 32,240 48,278 L172,278 C188,240 190,165 170,95 C160,36 60,36 50,95 Z" fill="url(#yenHairLong_${uid})"/>
+                    <!-- Đỉnh đầu tròn mượt -->
+                    <ellipse cx="110" cy="85" rx="60" ry="50" fill="#1e1b4b"/>
+                    <!-- Ánh bóng mượt trên tóc -->
+                    <path d="M56,118 Q50,180 58,255" stroke="#818cf8" stroke-width="3" opacity="0.4" fill="none" stroke-linecap="round"/>
+                    <path d="M164,118 Q170,180 162,255" stroke="#818cf8" stroke-width="3" opacity="0.4" fill="none" stroke-linecap="round"/>
+
+                    <!-- Thân bán thân (Đồng phục thủy thủ / Áo len Cardigan Cấp 2-3) -->
+                    <path d="M46,280 C46,188 174,188 174,280 Z" fill="${isTeen ? '#ffe4e6' : '#ffffff'}"/>
+                    ${isTeen ? '<polygon points="86,189 134,189 124,280 96,280" fill="#ffffff"/>' : ''}
+                    <path d="M84,189 L110,214 L136,189 L126,185 L110,203 L94,185 Z" fill="#be123c"/>
+                    <!-- Nơ cổ áo -->
+                    <path d="M100,209 L110,214 L120,209 L116,223 L110,217 L104,223 Z" fill="#f43f5e"/>
+
+                    <!-- Cổ thon -->
+                    <rect x="100" y="155" width="20" height="36" rx="10" fill="#ffe4e6"/>
+
+                    <!-- Khuôn mặt trái xoan mềm mại -->
+                    <path d="M68,100 C68,64 152,64 152,100 C152,138 132,160 110,160 C88,160 68,138 68,100 Z" fill="#fff1f2"/>
+
+                    <!-- Lọn tóc mai ôm hai bên má -->
+                    <path d="M66,86 C58,125 60,168 72,195 C68,158 69,120 75,96 Z" fill="#1e1b4b"/>
+                    <path d="M154,86 C162,125 160,168 148,195 C152,158 151,120 145,96 Z" fill="#1e1b4b"/>
+
+                    <!-- Tóc mái thưa tự nhiên -->
+                    <path d="M62,100 C64,48 156,48 158,100 C142,74 126,86 114,64 C108,86 96,76 86,66 C78,80 70,84 62,100 Z" fill="#1e1b4b"/>
+                    <path d="M80,60 Q110,50 140,60" stroke="#a5b4fc" stroke-width="2.2" opacity="0.45" fill="none" stroke-linecap="round"/>
+
+                    <!-- Kẹp tóc hoa anh đào -->
+                    <circle cx="140" cy="80" r="5.5" fill="#fda4af"/>
+                    <circle cx="140" cy="80" r="2.3" fill="#fef08a"/>
+
+                    <!-- Đôi mắt to tròn long lanh hút hồn -->
+                    <ellipse cx="90" cy="111" rx="7.8" ry="9.2" fill="url(#yenEyeGrad_${uid})"/>
+                    <ellipse cx="130" cy="111" rx="7.8" ry="9.2" fill="url(#yenEyeGrad_${uid})"/>
+                    <path d="M80,105 Q90,99 100,105" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M120,105 Q130,99 140,105" stroke="#0f172a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <circle cx="93" cy="107.5" r="3.1" fill="#ffffff"/>
+                    <circle cx="133" cy="107.5" r="3.1" fill="#ffffff"/>
+                    <circle cx="87.5" cy="115" r="1.5" fill="#ffffff" opacity="0.85"/>
+                    <circle cx="127.5" cy="115" r="1.5" fill="#ffffff" opacity="0.85"/>
+
+                    <!-- Lông mày thanh mảnh -->
+                    ${sad 
+                        ? '<path d="M80,96 Q90,91 98,97" stroke="#312e81" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M122,97 Q130,91 140,96" stroke="#312e81" stroke-width="2.2" fill="none" stroke-linecap="round"/>'
+                        : '<path d="M80,94 Q90,91 98,94" stroke="#312e81" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M122,94 Q130,91 140,94" stroke="#312e81" stroke-width="2.2" fill="none" stroke-linecap="round"/>'}
+
+                    <!-- Má ửng hồng dịu dàng -->
+                    <ellipse cx="79" cy="124" rx="8.5" ry="4" fill="#fb7185" opacity="${blush ? '0.8' : '0.3'}"/>
+                    <ellipse cx="141" cy="124" rx="8.5" ry="4" fill="#fb7185" opacity="${blush ? '0.8' : '0.3'}"/>
+
+                    <!-- Miệng xinh xắn -->
+                    ${sad 
+                        ? '<path d="M103,138 Q110,133 117,138" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+                        : '<path d="M102,135 Q110,142 118,135" stroke="#be123c" stroke-width="2.7" fill="none" stroke-linecap="round"/>'}
+                </svg>`;
+            }
+
+            if (type === "yen") {
+                return `
+                <svg viewBox="0 0 180 200" class="${scale} animate-float ${glow ? 'glow-light' : ''} drop-shadow-2xl">
+                    <defs>
+                        <radialGradient id="yenAura_${uid}">
+                            <stop offset="0%" stop-color="#fda4af" stop-opacity="0.55"/>
+                            <stop offset="100%" stop-color="#fda4af" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="yenHairLong_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e1b4b"/>
+                            <stop offset="55%" stop-color="#0f172a"/>
+                            <stop offset="100%" stop-color="#312e81"/>
+                        </linearGradient>
+                        <linearGradient id="yenEyeGrad_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e1b4b"/>
+                            <stop offset="65%" stop-color="#4338ca"/>
+                            <stop offset="100%" stop-color="#818cf8"/>
+                        </linearGradient>
+                    </defs>
+                    ${glow ? `<circle cx="90" cy="95" r="85" fill="url(#yenAura_${uid})"/>` : ''}
+
+                    <!-- Mái tóc dài óng ả buông xõa hai bên vai -->
+                    <path d="M38,76 C22,125 24,174 38,196 L142,196 C156,174 158,125 142,76 C134,26 46,26 38,76 Z" fill="url(#yenHairLong_${uid})"/>
+                    <!-- Đỉnh đầu tròn mượt tạo độ phồng cho tóc -->
+                    <ellipse cx="90" cy="68" rx="52" ry="44" fill="#1e1b4b"/>
+                    <!-- Ánh bóng mượt trên tóc -->
+                    <path d="M43,95 Q38,135 44,175" stroke="#818cf8" stroke-width="2.5" opacity="0.4" fill="none" stroke-linecap="round"/>
+                    <path d="M137,95 Q142,135 136,175" stroke="#818cf8" stroke-width="2.5" opacity="0.4" fill="none" stroke-linecap="round"/>
+
+                    <!-- Thân & Đồng phục váy thủy thủ nhẹ nhàng -->
+                    <path d="M48,195 C48,148 132,148 132,195 Z" fill="#ffffff"/>
+                    <path d="M68,149 L90,168 L112,149 L104,146 L90,160 L76,146 Z" fill="#be123c"/>
+                    <!-- Nơ cổ áo -->
+                    <path d="M82,165 L90,169 L98,165 L95,176 L90,171 L85,176 Z" fill="#f43f5e"/>
+
+                    <!-- Cổ thon -->
+                    <rect x="82" y="124" width="16" height="26" rx="8" fill="#ffe4e6"/>
+
+                    <!-- Khuôn mặt trái xoan mềm mại -->
+                    <path d="M54,80 C54,50 126,50 126,80 C126,110 109,129 90,129 C71,129 54,110 54,80 Z" fill="#fff1f2"/>
+
+                    <!-- Lọn tóc mai ôm nhẹ hai bên má -->
+                    <path d="M52,68 C45,98 48,132 58,152 C54,124 55,95 60,76 Z" fill="#1e1b4b"/>
+                    <path d="M128,68 C135,98 132,132 122,152 C126,124 125,95 120,76 Z" fill="#1e1b4b"/>
+
+                    <!-- Tóc mái thưa tự nhiên -->
+                    <path d="M48,80 C50,36 130,36 132,80 C118,58 105,68 94,50 C88,68 78,60 70,52 C62,64 55,66 48,80 Z" fill="#1e1b4b"/>
+                    <!-- Vệt sáng bóng trên tóc mái -->
+                    <path d="M64,46 Q90,38 116,46" stroke="#a5b4fc" stroke-width="2" opacity="0.45" fill="none" stroke-linecap="round"/>
+
+                    <!-- Kẹp tóc hoa anh đào nhỏ xinh bên trái -->
+                    <circle cx="116" cy="63" r="4.8" fill="#fda4af"/>
+                    <circle cx="116" cy="63" r="2" fill="#fef08a"/>
+
+                    <!-- Đôi mắt to tròn long lanh hút hồn -->
+                    <ellipse cx="73" cy="89" rx="6.8" ry="8" fill="url(#yenEyeGrad_${uid})"/>
+                    <ellipse cx="107" cy="89" rx="6.8" ry="8" fill="url(#yenEyeGrad_${uid})"/>
+                    <!-- Hàng mi cong nhẹ -->
+                    <path d="M65,84 Q73,79 81,84" stroke="#0f172a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+                    <path d="M99,84 Q107,79 115,84" stroke="#0f172a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+                    <!-- Điểm sáng lấp lánh trong mắt -->
+                    <circle cx="75.5" cy="86" r="2.7" fill="#ffffff"/>
+                    <circle cx="109.5" cy="86" r="2.7" fill="#ffffff"/>
+                    <circle cx="71" cy="92.5" r="1.3" fill="#ffffff" opacity="0.85"/>
+                    <circle cx="105" cy="92.5" r="1.3" fill="#ffffff" opacity="0.85"/>
+
+                    <!-- Lông mày thanh mảnh -->
+                    ${sad 
+                        ? '<path d="M65,76 Q73,72 80,77" stroke="#312e81" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M100,77 Q107,72 115,76" stroke="#312e81" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+                        : '<path d="M65,75 Q73,72 80,75" stroke="#312e81" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M100,75 Q107,72 115,75" stroke="#312e81" stroke-width="1.8" fill="none" stroke-linecap="round"/>'}
+
+                    <!-- Má ửng hồng dịu dàng -->
+                    <ellipse cx="64" cy="100" rx="7.5" ry="3.5" fill="#fb7185" opacity="${blush ? '0.75' : '0.3'}"/>
+                    <ellipse cx="116" cy="100" rx="7.5" ry="3.5" fill="#fb7185" opacity="${blush ? '0.75' : '0.3'}"/>
+
+                    <!-- Miệng xinh xắn -->
+                    ${sad 
+                        ? '<path d="M84,112 Q90,108 96,112" stroke="#be123c" stroke-width="2.2" fill="none" stroke-linecap="round"/>'
+                        : '<path d="M83,109 Q90,115 97,109" stroke="#be123c" stroke-width="2.4" fill="none" stroke-linecap="round"/>'}
+                </svg>`;
+            }
+
+            if (type === "bullies") {
+                return `
+                <svg viewBox="0 0 260 200" class="${scale} drop-shadow-2xl">
+                    <!-- Bóng tối u ám bao quanh nhóm bắt nạt -->
+                    <ellipse cx="130" cy="188" rx="115" ry="12" fill="#090d16" opacity="0.6"/>
+
+                    <!-- Đứa bên trái (Tóc bob ngắn, chống nạnh) -->
+                    <g transform="translate(10, 22)">
+                        <path d="M22,165 C22,125 78,125 78,165 Z" fill="#334155"/>
+                        <path d="M36,125 L50,140 L64,125" fill="#94a3b8"/>
+                        <rect x="44" y="106" width="12" height="20" rx="6" fill="#fed7aa"/>
+                        <!-- Tóc bob -->
+                        <path d="M24,75 C22,40 78,40 76,75 L80,105 L20,105 Z" fill="#3f2e3e"/>
+                        <circle cx="50" cy="80" r="24" fill="#ffedd5"/>
+                        <path d="M26,75 Q38,52 52,65 Q65,52 74,75 C70,48 30,48 26,75 Z" fill="#3f2e3e"/>
+                        <!-- Mắt xếch & miệng cười đểu -->
+                        <path d="M36,74 L46,79" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M64,74 L54,79" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="42" cy="82" r="3" fill="#1e293b"/>
+                        <circle cx="58" cy="82" r="3" fill="#1e293b"/>
+                        <path d="M43,95 Q52,99 58,92" stroke="#991b1b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- Đứa bên phải (Tóc đuôi ngựa, khoanh tay) -->
+                    <g transform="translate(150, 20)">
+                        <!-- Đuôi tóc -->
+                        <path d="M68,55 Q92,65 88,105 Q76,90 66,70 Z" fill="#451a03"/>
+                        <path d="M22,168 C22,126 78,126 78,168 Z" fill="#334155"/>
+                        <path d="M36,126 L50,141 L64,126" fill="#94a3b8"/>
+                        <rect x="44" y="107" width="12" height="20" rx="6" fill="#fed7aa"/>
+                        <circle cx="50" cy="80" r="24" fill="#ffedd5"/>
+                        <path d="M26,78 C26,45 74,45 74,78 Q60,58 50,64 Q38,58 26,78 Z" fill="#451a03"/>
+                        <!-- Mắt xếch & miệng cười cợt -->
+                        <path d="M36,75 L46,80" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M64,75 L54,80" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="42" cy="83" r="3" fill="#1e293b"/>
+                        <circle cx="58" cy="83" r="3" fill="#1e293b"/>
+                        <path d="M42,94 Q50,101 58,94 Z" fill="#be123c"/>
+                    </g>
+
+                    <!-- Đứa cầm đầu ở giữa (Tóc buộc hai chùm, chỉ tay về phía Yên) -->
+                    <g transform="translate(78, 8)">
+                        <!-- Hai chùm tóc -->
+                        <path d="M22,58 Q2,72 8,108 Q22,95 28,72 Z" fill="#1e1b4b"/>
+                        <path d="M82,58 Q102,72 96,108 Q82,95 76,72 Z" fill="#1e1b4b"/>
+                        <path d="M20,180 C20,132 84,132 84,180 Z" fill="#1e293b"/>
+                        <path d="M36,133 L52,150 L68,133" fill="#cbd5e1"/>
+                        <path d="M48,145 L56,145 L54,175 L50,175 Z" fill="#dc2626"/>
+                        <rect x="45" y="112" width="14" height="22" rx="7" fill="#fed7aa"/>
+                        <circle cx="52" cy="84" r="27" fill="#ffedd5"/>
+                        <path d="M25,82 C25,44 79,44 79,82 Q64,60 52,68 Q40,60 25,82 Z" fill="#1e1b4b"/>
+                        <!-- Mắt hống hách -->
+                        <path d="M36,78 L48,83" stroke="#0f172a" stroke-width="2.8" stroke-linecap="round"/>
+                        <path d="M68,78 L56,83" stroke="#0f172a" stroke-width="2.8" stroke-linecap="round"/>
+                        <circle cx="43" cy="86" r="3.5" fill="#0f172a"/>
+                        <circle cx="61" cy="86" r="3.5" fill="#0f172a"/>
+                        <!-- Miệng cười hô hố -->
+                        <path d="M41,98 Q52,110 63,98 Z" fill="#991b1b"/>
+                        <!-- Cánh tay chỉ thẳng về phía Yên -->
+                        <path d="M78,142 L112,132" stroke="#fed7aa" stroke-width="8" stroke-linecap="round"/>
+                        <circle cx="114" cy="131" r="4.5" fill="#fed7aa"/>
+                    </g>
+                </svg>`;
+            }
+
+            if (type === "sharp_stone") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} drop-shadow-2xl">
+                    <defs>
+                        <radialGradient id="dangerAura_${uid}">
+                            <stop offset="0%" stop-color="#dc2626" stop-opacity="0.45"/>
+                            <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="stoneFace1_${uid}" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#475569"/>
+                        </linearGradient>
+                        <linearGradient id="stoneFace2_${uid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#64748b"/>
+                            <stop offset="100%" stop-color="#1e293b"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="110" cy="100" r="90" fill="url(#dangerAura_${uid})"/>
+
+                    <!-- Mặt đất & bóng đổ -->
+                    <ellipse cx="110" cy="158" rx="82" ry="15" fill="#090d16" opacity="0.85"/>
+                    <!-- Vài viên sỏi nhỏ xung quanh -->
+                    <polygon points="34,154 42,148 50,155 40,160" fill="#334155"/>
+                    <polygon points="172,150 182,144 188,152 178,157" fill="#475569"/>
+
+                    <!-- Viên đá sắc nhọn đa diện 3D nằm trên đất -->
+                    <g transform="translate(5, 6)">
+                        <!-- Khối chính viên đá -->
+                        <polygon points="52,140 38,98 84,42 142,34 176,86 156,142 102,152" fill="url(#stoneFace2_${uid})" stroke="#0f172a" stroke-width="2.5" stroke-linejoin="round"/>
+                        <!-- Mảng sáng góc cạnh sắc -->
+                        <polygon points="84,42 142,34 120,88 68,82" fill="url(#stoneFace1_${uid})"/>
+                        <polygon points="38,98 84,42 68,82 52,140" fill="#cbd5e1" opacity="0.35"/>
+                        <!-- Mũi nhọn sắc lẹm bên phải -->
+                        <polygon points="142,34 176,86 120,88" fill="#94a3b8" opacity="0.75"/>
+                        <!-- Đường nứt & vân đá -->
+                        <polyline points="84,42 98,74 88,110 102,152" fill="none" stroke="#1e293b" stroke-width="2"/>
+                        <polyline points="98,74 136,86 156,142" fill="none" stroke="#1e293b" stroke-width="1.8"/>
+                        <!-- Vệt đỏ rướm máu trên cạnh sắc của viên đá -->
+                        <path d="M132,36 L142,34 L152,50 Q142,54 136,46 Z" fill="#e11d48" opacity="0.85"/>
+                        <circle cx="148" cy="56" r="2.2" fill="#e11d48" opacity="0.8"/>
+                        <path d="M72,56 Q78,66 75,74" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+                    </g>
+                </svg>`;
+            }
+
+            // --- MINH HỌA CHAPTER 2 ---
+            if (type === "window_across") {
+                return `
+                <svg viewBox="0 0 280 200" class="${scale} drop-shadow-2xl">
+                    <!-- Cửa sổ nhà Yên bên trái (tối, yên tĩnh) -->
+                    <rect x="18" y="30" width="84" height="115" rx="8" fill="#1e1b4b" stroke="#64748b" stroke-width="4"/>
+                    <line x1="60" y1="30" x2="60" y2="145" stroke="#64748b" stroke-width="3"/>
+                    <line x1="18" y1="88" x2="102" y2="88" stroke="#64748b" stroke-width="3"/>
+                    <circle cx="60" cy="82" r="14" fill="#312e81"/>
+                    <path d="M44,125 C44,104 76,104 76,125 Z" fill="#312e81"/>
+
+                    <!-- Con đường nhỏ hoa dại ở giữa -->
+                    <path d="M110,165 Q140,145 170,165" stroke="#86efac" stroke-width="2" fill="none"/>
+                    <circle cx="125" cy="158" r="3" fill="#fde047"/>
+                    <circle cx="140" cy="152" r="3.5" fill="#fda4af"/>
+                    <circle cx="156" cy="159" r="3" fill="#fde047"/>
+
+                    <!-- Cửa sổ nhà Nam bên phải (ánh đèn vàng ấm áp tỏa sáng) -->
+                    <rect x="178" y="30" width="84" height="115" rx="8" fill="#fef08a" stroke="#fbbf24" stroke-width="4" class="glow-light"/>
+                    <line x1="220" y1="30" x2="220" y2="145" stroke="#d97706" stroke-width="3"/>
+                    <line x1="178" y1="88" x2="262" y2="88" stroke="#d97706" stroke-width="3"/>
+                    <circle cx="220" cy="82" r="14" fill="#f59e0b" opacity="0.7"/>
+                    <path d="M204,125 C204,104 236,104 236,125 Z" fill="#f59e0b" opacity="0.7"/>
+
+                    <!-- Sợi chỉ ánh sáng nối hai khung cửa sổ -->
+                    <path d="M102,88 Q140,115 178,88" stroke="#fde047" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+                </svg>`;
+            }
+
+            if (type === "yen_diary") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} animate-float drop-shadow-2xl">
+                    <!-- Bìa sổ nhật ký màu hồng tím dịu dàng -->
+                    <rect x="42" y="25" width="136" height="155" rx="14" fill="#881337" stroke="#fda4af" stroke-width="3"/>
+                    <rect x="52" y="32" width="120" height="141" rx="10" fill="#fff1f2"/>
+                    <!-- Gáy sổ -->
+                    <rect x="42" y="25" width="16" height="155" rx="6" fill="#4c0519"/>
+                    <!-- Nhãn tên "Nhật ký của Yên" -->
+                    <rect x="74" y="48" width="82" height="26" rx="6" fill="#ffe4e6" stroke="#fb7185" stroke-width="1.5"/>
+                    <text x="115" y="65" font-size="9.5" font-weight="bold" fill="#9f1239" text-anchor="middle">Nhật ký của Yên</text>
+                    <!-- Dòng chữ viết tay -->
+                    <line x1="70" y1="92" x2="156" y2="92" stroke="#fda4af" stroke-width="2"/>
+                    <line x1="70" y1="108" x2="150" y2="108" stroke="#fda4af" stroke-width="2"/>
+                    <line x1="70" y1="124" x2="142" y2="124" stroke="#fda4af" stroke-width="2"/>
+                    <!-- Trái tim nhỏ góc trang -->
+                    <path d="M115,148 C115,143 107,143 107,149 C107,154 115,159 115,159 C115,159 123,154 123,149 C123,143 115,143 115,148 Z" fill="#f43f5e"/>
+                </svg>`;
+            }
+
+            if (type === "teddy_gift") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} animate-float drop-shadow-2xl">
+                    <!-- Tai gấu -->
+                    <circle cx="74" cy="54" r="18" fill="#b45309"/>
+                    <circle cx="74" cy="54" r="10" fill="#fde68a"/>
+                    <circle cx="146" cy="54" r="18" fill="#b45309"/>
+                    <circle cx="146" cy="54" r="10" fill="#fde68a"/>
+                    <!-- Đầu gấu -->
+                    <circle cx="110" cy="82" r="38" fill="#d97706"/>
+                    <ellipse cx="110" cy="92" rx="16" ry="12" fill="#fef3c7"/>
+                    <circle cx="96" cy="76" r="4" fill="#1e293b"/>
+                    <circle cx="124" cy="76" r="4" fill="#1e293b"/>
+                    <ellipse cx="110" cy="88" rx="5" ry="3.5" fill="#451a03"/>
+                    <!-- Thân & Tay ôm trái tim -->
+                    <ellipse cx="110" cy="144" rx="42" ry="44" fill="#b45309"/>
+                    <ellipse cx="110" cy="146" rx="24" ry="26" fill="#fde68a"/>
+                    <!-- Nơ đỏ -->
+                    <polygon points="110,116 94,108 94,124" fill="#e11d48"/>
+                    <polygon points="110,116 126,108 126,124" fill="#e11d48"/>
+                    <circle cx="110" cy="116" r="4.5" fill="#fda4af"/>
+                </svg>`;
+            }
+
+            if (type === "pink_love_letter") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} drop-shadow-2xl">
+                    <!-- Phong thư màu hồng -->
+                    <rect x="35" y="52" width="150" height="98" rx="10" fill="#fbcfe8" stroke="#f472b6" stroke-width="3"/>
+                    <polyline points="35,52 110,108 185,52" fill="none" stroke="#ec4899" stroke-width="3"/>
+                    <!-- Dấu sáp trái tim -->
+                    <circle cx="110" cy="105" r="14" fill="#e11d48"/>
+                    <path d="M110,101 C110,97 104,97 104,102 C104,106 110,111 110,111 C110,111 116,106 116,102 C116,97 110,97 110,101 Z" fill="#fff1f2"/>
+                </svg>`;
+            }
+
+            if (type === "secret_drawer_plan" || type === "broken_thread_omen") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} drop-shadow-2xl">
+                    <!-- Ngăn kéo tối & Sợi chỉ đỏ căng chặt -->
+                    <rect x="35" y="55" width="150" height="90" rx="10" fill="#1e1b4b" stroke="#4c1d95" stroke-width="3"/>
+                    <rect x="85" y="92" width="50" height="16" rx="8" fill="#0f172a" stroke="#e11d48" stroke-width="2"/>
+                    <circle cx="110" cy="100" r="4" fill="#f43f5e" class="animate-ping"/>
+                    <path d="M20,100 Q110,60 200,100" stroke="#e11d48" stroke-width="2.5" fill="none" class="red-thread-anim"/>
+                </svg>`;
+            }
+
+            // --- MINH HỌA CHAPTER 3 ---
+            if (type === "rain_rejection") {
+                return `
+                <svg viewBox="0 0 260 200" class="${scale} drop-shadow-2xl">
+                    <!-- Hạt mưa rơi xiên lạnh lẽo -->
+                    <line x1="40" y1="20" x2="25" y2="60" stroke="#94a3b8" stroke-width="2" opacity="0.6"/>
+                    <line x1="110" y1="15" x2="95" y2="55" stroke="#94a3b8" stroke-width="2" opacity="0.6"/>
+                    <line x1="190" y1="25" x2="175" y2="65" stroke="#94a3b8" stroke-width="2" opacity="0.6"/>
+                    <line x1="230" y1="40" x2="215" y2="80" stroke="#94a3b8" stroke-width="2" opacity="0.6"/>
+                    <!-- Sợi chỉ đỏ đứt lìa giữa màn mưa -->
+                    <path d="M30,115 Q85,130 118,125" stroke="#f43f5e" stroke-width="2.5" fill="none"/>
+                    <path d="M142,125 Q180,135 230,115" stroke="#f43f5e" stroke-width="2.5" fill="none"/>
+                    <circle cx="130" cy="125" r="16" fill="none" stroke="#fda4af" stroke-width="1.5" stroke-dasharray="4 4"/>
+                    <text x="130" y="168" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">"Tụi tao chỉ là bạn thôi..."</text>
+                </svg>`;
+            }
+
+            if (type === "sleeping_potion_cup") {
+                return `
+                <svg viewBox="0 0 220 200" class="${scale} animate-float drop-shadow-2xl">
+                    <!-- Ly nước thủy tinh -->
+                    <polygon points="75,65 145,65 135,155 85,155" fill="#bae6fd" fill-opacity="0.35" stroke="#e0f2fe" stroke-width="3"/>
+                    <polygon points="79,95 141,95 135,155 85,155" fill="#38bdf8" fill-opacity="0.45"/>
+                    <!-- Viên thuốc ngủ rơi xuống tạo gợn sóng -->
+                    <ellipse cx="110" cy="115" rx="8" ry="5" fill="#ffffff" class="animate-pulse"/>
+                    <ellipse cx="110" cy="95" rx="24" ry="4" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.7"/>
+                </svg>`;
+            }
+
+            if (type === "knife_confrontation") {
+                return `
+                <svg viewBox="0 0 240 200" class="${scale} drop-shadow-2xl">
+                    <defs>
+                        <linearGradient id="bladeGrad_${uid}" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#f8fafc"/>
+                            <stop offset="100%" stop-color="#94a3b8"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Sợi dây thừng & Con dao sáng loáng -->
+                    <path d="M40,145 Q120,165 200,145" stroke="#d97706" stroke-width="7" stroke-linecap="round" fill="none"/>
+                    <path d="M45,153 Q120,173 195,153" stroke="#b45309" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    <!-- Lưỡi dao -->
+                    <g transform="rotate(-18 120 95)">
+                        <rect x="45" y="88" width="42" height="14" rx="4" fill="#1e293b"/>
+                        <polygon points="87,86 190,91 172,102 87,102" fill="url(#bladeGrad_${uid})" stroke="#cbd5e1" stroke-width="1"/>
+                    </g>
+                </svg>`;
+            }
+        }
+
+        function renderSceneIllustration(visualKey) {
+            renderSceneBackdrop(visualKey);
+            const container = document.getElementById("scene-illustration");
+            const isTeen = currentChapter >= 2;
+            const node = STORY_NODES[currentNodeId] || {};
+            const speakerText = (node.speaker || "").toLowerCase();
+
+            // Tự động làm nổi bật nhân vật đang nói và làm mờ nhẹ người đang lắng nghe (chuẩn Visual Novel)
+            const namDim = speakerText.includes("yên") && !speakerText.includes("nam") ? "vn-dimmed" : "vn-active";
+            const yenDim = speakerText.includes("nam") && !speakerText.includes("yên") ? "vn-dimmed" : "vn-active";
+
+            let html = "";
+
+            switch (visualKey) {
+                case "nam_walk":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("nam", { smile: true, isTeen })}
+                    </div>`;
+                    break;
+                case "bully_scene_nam":
+                case "bully_scene_yen":
+                    html = `<div class="flex items-end justify-center gap-0 sm:gap-4">
+                        ${getCharacterSVG("bullies", { scale: "w-56 h-52 sm:w-80 sm:h-72" })}
+                        ${getCharacterSVG("yen", { sad: true, scale: "w-48 h-56 sm:w-64 sm:h-80" })}
+                    </div>`;
+                    break;
+                case "nam_shout":
+                    html = `<div class="flex flex-col items-center">
+                        <div class="mb-2 px-5 py-2 rounded-2xl bg-amber-400 text-slate-950 font-extrabold text-sm sm:text-lg shadow-xl vn-sprite-hop">
+                            "THẦY GIÁO ĐANG TỚI KÌA!"
+                        </div>
+                        ${getCharacterSVG("nam", { smile: false, glow: true, isTeen })}
+                    </div>`;
+                    break;
+                case "meet_eyes_nam":
+                case "nam_hand_help":
+                    html = `<div class="flex items-end justify-center gap-1 sm:gap-10">
+                        <div class="${namDim}">${getCharacterSVG("nam", { smile: true, glow: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                        <div class="${yenDim}">${getCharacterSVG("yen", { sad: false, smile: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                    </div>`;
+                    break;
+                case "yen_sparkle":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("yen", { smile: true, glow: true, blush: true, isTeen, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "nam_hero_light":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("nam", { smile: true, glow: true, isTeen, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "both_talk_normal":
+                    html = `<div class="flex items-end justify-center gap-1 sm:gap-12">
+                        <div class="${namDim}">${getCharacterSVG("nam", { smile: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                        <div class="${yenDim}">${getCharacterSVG("yen", { smile: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                    </div>`;
+                    break;
+                case "nam_blush":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("nam", { smile: false, blush: true, isTeen, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "yen_smile_bright":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("yen", { smile: true, blush: true, glow: true, isTeen, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "both_happy":
+                    html = `<div class="flex items-end justify-center gap-1 sm:gap-12">
+                        <div class="${namDim}">${getCharacterSVG("nam", { smile: true, blush: true, glow: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                        <div class="${yenDim}">${getCharacterSVG("yen", { smile: true, blush: true, glow: true, isTeen, scale: "w-48 h-56 sm:w-72 sm:h-88" })}</div>
+                    </div>`;
+                    break;
+                case "sunset_farewell":
+                    html = `<div class="flex items-end justify-center gap-4 sm:gap-16">
+                        ${getCharacterSVG("nam", { smile: true, isTeen, scale: "w-44 h-52 sm:w-64 sm:h-80" })}
+                        ${getCharacterSVG("yen", { smile: true, blush: true, isTeen, scale: "w-44 h-52 sm:w-64 sm:h-80" })}
+                    </div>`;
+                    break;
+                case "yen_lonely_house":
+                case "yen_darkness":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("yen", { sad: true, isTeen, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "grandma_memory":
+                    html = `<div class="flex flex-col items-center mb-12">
+                        <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-amber-300/20 border-2 border-amber-300/50 flex items-center justify-center glow-light">
+                            <span class="text-6xl">🕯️</span>
+                        </div>
+                    </div>`;
+                    break;
+                case "yen_stone_grip":
+                    html = `<div class="flex flex-col items-center mb-8 animate-pulse">
+                        ${getCharacterSVG("sharp_stone", { scale: "w-56 h-52 sm:w-72 sm:h-64" })}
+                    </div>`;
+                    break;
+                case "window_across":
+                case "yen_diary":
+                case "teddy_gift":
+                case "pink_love_letter":
+                case "secret_drawer_plan":
+                case "broken_thread_omen":
+                case "rain_rejection":
+                case "sleeping_potion_cup":
+                case "knife_confrontation":
+                    html = `<div class="flex flex-col items-center mb-8">
+                        ${getCharacterSVG(visualKey, { scale: "w-64 h-56 sm:w-80 sm:h-68" })}
+                    </div>`;
+                    break;
+                case "yen_cry_tears":
+                    html = `<div class="flex flex-col items-center">
+                        ${getCharacterSVG("yen", { sad: true, blush: true, glow: true, isTeen: true, scale: "w-64 h-72 sm:w-80 sm:h-96" })}
+                    </div>`;
+                    break;
+                case "warm_embrace":
+                    html = `<div class="flex items-end justify-center gap-0 sm:gap-2">
+                        <div class="vn-active">${getCharacterSVG("nam", { smile: true, blush: true, glow: true, isTeen: true, scale: "w-52 h-60 sm:w-76 sm:h-92" })}</div>
+                        <div class="vn-active -ml-6 sm:-ml-10">${getCharacterSVG("yen", { smile: true, blush: true, glow: true, isTeen: true, scale: "w-52 h-60 sm:w-76 sm:h-92" })}</div>
+                    </div>`;
+                    break;
+            }
+            container.innerHTML = html;
+        }
+
+        // ==================== QUẢN LÝ MÀN HÌNH & KẾT CỤC ====================
+        function initParticles() {
+            const container = document.getElementById("particles-container");
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement("div");
+                p.className = i % 2 === 0 ? "particle bg-rose-300/60" : "particle bg-amber-200/60";
+                const size = Math.random() * 5 + 2;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.animationDuration = `${Math.random() * 8 + 7}s`;
+                p.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(p);
+            }
+        }
+
+        function hideAllScreens() {
+            document.getElementById("screen-home").classList.add("hidden");
+            document.getElementById("screen-select").classList.add("hidden");
+            document.getElementById("screen-game").classList.add("hidden");
+            document.getElementById("screen-ending").classList.add("hidden");
+            document.getElementById("btn-home-top").classList.add("hidden");
+            document.getElementById("btn-backlog").classList.add("hidden");
+            document.getElementById("btn-auto").classList.add("hidden");
+            document.getElementById("btn-qsave").classList.add("hidden");
+            document.getElementById("btn-qload").classList.add("hidden");
+            if (isAutoPlay) toggleAutoPlay(false);
+        }
+
+        // Hệ thống Quick Save & Quick Load chuẩn Visual Novel
+        function showVnToast(msg) {
+            const toast = document.getElementById("vn-toast");
+            toast.textContent = msg;
+            toast.classList.remove("hidden");
+            setTimeout(() => toast.classList.add("hidden"), 1800);
+        }
+
+        function quickSave() {
+            playSfxClick();
+            if (!currentRoute || !currentNodeId) return;
+            const saveData = {
+                route: currentRoute,
+                chapter: currentChapter,
+                nodeId: currentNodeId,
+                stat1: stat1Value,
+                stat2: stat2Value,
+                history: dialogueHistory
+            };
+            localStorage.setItem("scmm_quicksave", JSON.stringify(saveData));
+            showVnToast("💾 Đã lưu nhanh (Quick Save)!");
+        }
+
+        function quickLoad() {
+            playSfxClick();
+            const raw = localStorage.getItem("scmm_quicksave");
+            if (!raw) {
+                showVnToast("⚠️ Chưa có dữ liệu Quick Save!");
+                return;
+            }
+            const saveData = JSON.parse(raw);
+            currentRoute = saveData.route;
+            currentChapter = saveData.chapter;
+            currentNodeId = saveData.nodeId;
+            stat1Value = saveData.stat1;
+            stat2Value = saveData.stat2;
+            dialogueHistory = saveData.history || [];
+
+            document.getElementById("choice-overlay").classList.add("hidden");
+            document.getElementById("minigame-overlay").classList.add("hidden");
+            updateStatsHUD();
+
+            const hudName = document.getElementById("hud-char-name");
+            const hudDot = document.getElementById("hud-char-dot");
+            hudName.textContent = `Ch.${currentChapter} • ${currentRoute === "nam" ? "Nam" : "Yên"}`;
+            hudDot.className = `w-2.5 h-2.5 rounded-full ${currentRoute === "nam" ? "bg-sky-400" : "bg-rose-400"}`;
+
+            renderCurrentNode();
+            showVnToast("📂 Đã tải lại điểm lưu (Quick Load)!");
+        }
+
+        function updateStatsHUD() {
+            stat1Value = Math.max(0, Math.min(100, stat1Value));
+            stat2Value = Math.max(0, Math.min(100, stat2Value));
+
+            if (currentRoute === "nam") {
+                document.getElementById("stat1-icon").textContent = "❤️";
+                document.getElementById("stat1-label").textContent = "Rung động:";
+                document.getElementById("stat1-val").textContent = `${stat1Value}%`;
+                document.getElementById("stat1-val").className = "font-extrabold text-rose-300";
+
+                document.getElementById("stat2-icon").textContent = "🛡️";
+                document.getElementById("stat2-label").textContent = "Dũng khí:";
+                document.getElementById("stat2-val").textContent = `${stat2Value}%`;
+                document.getElementById("stat2-val").className = "font-extrabold text-amber-300";
+            } else {
+                document.getElementById("stat1-icon").textContent = "🖤";
+                document.getElementById("stat1-label").textContent = "Ám ảnh:";
+                document.getElementById("stat1-val").textContent = `${stat1Value}%`;
+                document.getElementById("stat1-val").className = "font-extrabold text-purple-300";
+
+                document.getElementById("stat2-icon").textContent = "✨";
+                document.getElementById("stat2-label").textContent = "Hy vọng:";
+                document.getElementById("stat2-val").textContent = `${stat2Value}%`;
+                document.getElementById("stat2-val").className = "font-extrabold text-amber-300";
+            }
+        }
+
+        function toggleAutoPlay(forceState) {
+            isAutoPlay = typeof forceState === "boolean" ? forceState : !isAutoPlay;
+            const btn = document.getElementById("btn-auto");
+            const icon = document.getElementById("auto-icon");
+            const text = document.getElementById("auto-text");
+
+            if (isAutoPlay) {
+                btn.classList.add("border-amber-400", "bg-amber-500/20", "text-amber-200");
+                icon.textContent = "⏸️";
+                text.textContent = "Đang chạy";
+                if (!isTyping) scheduleAutoNext();
+            } else {
+                btn.classList.remove("border-amber-400", "bg-amber-500/20", "text-amber-200");
+                icon.textContent = "▶️";
+                text.textContent = "Tự động";
+                if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            }
+        }
+
+        function scheduleAutoNext() {
+            if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            if (!isAutoPlay) return;
+            const node = STORY_NODES[currentNodeId];
+            if (!node || node.choices || node.minigame || node.endingId) {
+                toggleAutoPlay(false);
+                return;
+            }
+            autoPlayTimer = setTimeout(() => {
+                if (isAutoPlay) handleNextDialogue();
+            }, 2200);
+        }
+
+        function skipToNextChoice() {
+            playSfxClick();
+            if (isAutoPlay) toggleAutoPlay(false);
+            let safety = 0;
+            while (safety < 30) {
+                const node = STORY_NODES[currentNodeId];
+                if (!node) break;
+                if (node.choices || node.minigame || node.endingId) {
+                    finishTyping();
+                    break;
+                }
+                if (node.next) {
+                    currentNodeId = node.next;
+                    const nextNode = STORY_NODES[currentNodeId];
+                    dialogueHistory.push({ speaker: nextNode.speaker, text: nextNode.text });
+                    renderCurrentNode(true);
+                } else {
+                    break;
+                }
+                safety++;
+            }
+        }
+
+        function openBacklogModal() {
+            playSfxClick();
+            const container = document.getElementById("backlog-content");
+            container.innerHTML = dialogueHistory.map(item => `
+                <div class="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div class="text-xs font-bold text-rose-300 mb-1">${item.speaker}</div>
+                    <div class="text-slate-200 leading-relaxed">${item.text.replace(/\n/g, "<br>")}</div>
+                </div>
+            `).join("");
+            document.getElementById("modal-backlog").classList.remove("hidden");
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function closeBacklogModal() {
+            document.getElementById("modal-backlog").classList.add("hidden");
+        }
+
+        function updateProgressUI() {
+            document.getElementById("ending-count-label").textContent = unlockedEndings.size;
+
+            const isNamChap1Cleared = unlockedEndings.has("nam_true");
+            const isYenChap1Cleared = unlockedEndings.has("yen_true");
+            const isAnyChap1Cleared = isNamChap1Cleared || isYenChap1Cleared;
+
+            const isNamChap2Cleared = unlockedEndings.has("c2_nam_true");
+            const isYenChap2Cleared = unlockedEndings.has("c2_yen_true");
+            const isAnyChap2Cleared = isNamChap2Cleared || isYenChap2Cleared;
+
+            const lockIcon2 = document.getElementById("tab-chap-2-lock");
+            if (lockIcon2) lockIcon2.textContent = isAnyChap1Cleared ? "🔓" : "🔒";
+
+            const lockIcon3 = document.getElementById("tab-chap-3-lock");
+            if (lockIcon3) lockIcon3.textContent = isAnyChap2Cleared ? "🔓" : "🔒";
+
+            const cardNam = document.getElementById("card-nam");
+            const cardYen = document.getElementById("card-yen");
+            
+            if (selectedChapterTab === 1) {
+                const namUnlocked = ["nam_true", "nam_bad_walkaway", "nam_bad_shy"].filter(id => unlockedEndings.has(id)).length;
+                const yenUnlocked = ["yen_true", "yen_bad_stone", "yen_bad_run"].filter(id => unlockedEndings.has(id)).length;
+                document.getElementById("card-status-nam").textContent = `${namUnlocked}/3 Kết cục`;
+                document.getElementById("card-status-yen").textContent = `${yenUnlocked}/3 Kết cục`;
+                if (cardNam) cardNam.classList.remove("opacity-60");
+                if (cardYen) cardYen.classList.remove("opacity-60");
+            } else if (selectedChapterTab === 2) {
+                const namUnlocked = ["c2_nam_true", "c2_nam_bad_distance", "c2_nam_bad_confess"].filter(id => unlockedEndings.has(id)).length;
+                const yenUnlocked = ["c2_yen_true", "c2_yen_bad_letter", "c2_yen_bad_burn"].filter(id => unlockedEndings.has(id)).length;
+                document.getElementById("card-status-nam").textContent = isNamChap1Cleared ? `${namUnlocked}/3 Kết cục` : "🔒 Khóa";
+                document.getElementById("card-status-yen").textContent = isYenChap1Cleared ? `${yenUnlocked}/3 Kết cục` : "🔒 Khóa";
+
+                if (cardNam) cardNam.classList.toggle("opacity-60", !isNamChap1Cleared);
+                if (cardYen) cardYen.classList.toggle("opacity-60", !isYenChap1Cleared);
+
+                document.getElementById("card-cta-nam").textContent = isNamChap1Cleared ? "Nhập vai Nam (Chapter 2)" : "🔒 Hoàn thành True Ending Ch.1 của Nam";
+                document.getElementById("card-cta-yen").textContent = isYenChap1Cleared ? "Nhập vai Yên (Chapter 2)" : "🔒 Hoàn thành True Ending Ch.1 của Yên";
+            } else {
+                const namUnlocked = ["c3_nam_true", "c3_nam_bad_panic", "c3_nam_bad_lie"].filter(id => unlockedEndings.has(id)).length;
+                const yenUnlocked = ["c3_yen_true", "c3_yen_bad_hesitate", "c3_yen_bad_cage"].filter(id => unlockedEndings.has(id)).length;
+                document.getElementById("card-status-nam").textContent = isNamChap2Cleared ? `${namUnlocked}/3 Kết cục` : "🔒 Khóa";
+                document.getElementById("card-status-yen").textContent = isYenChap2Cleared ? `${yenUnlocked}/3 Kết cục` : "🔒 Khóa";
+
+                if (cardNam) cardNam.classList.toggle("opacity-60", !isNamChap2Cleared);
+                if (cardYen) cardYen.classList.toggle("opacity-60", !isYenChap2Cleared);
+
+                document.getElementById("card-cta-nam").textContent = isNamChap2Cleared ? "Nhập vai Nam (Chapter 3)" : "🔒 Hoàn thành True Ending Ch.2 của Nam";
+                document.getElementById("card-cta-yen").textContent = isYenChap2Cleared ? "Nhập vai Yên (Chapter 3)" : "🔒 Hoàn thành True Ending Ch.2 của Yên";
+            }
+        }
+
+        function selectChapterTab(chapNum) {
+            playSfxClick();
+            const isAnyChap1Cleared = unlockedEndings.has("nam_true") || unlockedEndings.has("yen_true");
+            const isAnyChap2Cleared = unlockedEndings.has("c2_nam_true") || unlockedEndings.has("c2_yen_true");
+
+            if (chapNum === 2 && !isAnyChap1Cleared) {
+                showVnToast("🔒 Hãy đạt True Ending ở Chapter 1 trước để mở khóa Chapter 2!");
+                return;
+            }
+            if (chapNum === 3 && !isAnyChap2Cleared) {
+                showVnToast("🔒 Hãy đạt True Ending ở Chapter 2 trước để mở khóa Chapter 3!");
+                return;
+            }
+
+            selectedChapterTab = chapNum;
+
+            const tab1 = document.getElementById("tab-chap-1");
+            const tab2 = document.getElementById("tab-chap-2");
+            const tab3 = document.getElementById("tab-chap-3");
+
+            const activeTabClass = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 shadow flex items-center gap-1.5";
+            const inactiveTabClass = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-300 hover:text-white flex items-center gap-1.5";
+
+            tab1.className = chapNum === 1 ? activeTabClass : inactiveTabClass;
+            tab2.className = chapNum === 2 ? activeTabClass : inactiveTabClass;
+            tab3.className = chapNum === 3 ? activeTabClass : inactiveTabClass;
+
+            if (chapNum === 1) {
+                document.getElementById("select-chapter-heading").textContent = "Chapter 1: Cuộc Gặp Gỡ Định Mệnh";
+                
+                document.getElementById("card-badge-nam").textContent = "9 Tuổi • Chân Thành";
+                document.getElementById("card-title-nam").textContent = "Cậu Bé Nam";
+                document.getElementById("card-desc-nam").textContent = "\"Trên đường tự đi bộ về nhà, tôi bắt gặp một cô bé có đôi mắt sáng long lanh đang bị vây quanh. Liệu tôi có đủ dũng khí và sự tinh tế để bước vào thế giới của cậu ấy?\"";
+                document.getElementById("card-cta-nam").textContent = "Nhập vai Nam (Chapter 1)";
+
+                document.getElementById("card-badge-yen").textContent = "9 Tuổi • Nhạy Cảm";
+                document.getElementById("card-title-yen").textContent = "Cô Bé Yên";
+                document.getElementById("card-desc-yen").textContent = "\"Sau khi bà nội mất, ngọn đèn duy nhất trong đời tôi đã tắt. Đứng giữa ranh giới của sự thù hận và tuyệt vọng, một bàn tay ấm áp đã chìa ra...\"";
+                document.getElementById("card-cta-yen").textContent = "Nhập vai Yên (Chapter 1)";
+            } else if (chapNum === 2) {
+                document.getElementById("select-chapter-heading").textContent = "Chapter 2: Ánh Đèn & Bóng Tối";
+
+                document.getElementById("card-badge-nam").textContent = "Cấp 2 – Cấp 3 • Ấm Áp";
+                document.getElementById("card-title-nam").textContent = "Nam (Thời Niên Thiếu)";
+                document.getElementById("card-desc-nam").textContent = "\"Từ những món quà sinh nhật đến những năm tháng cấp 2 gắn bó như hình với bóng, tôi nhận ra mình đã quá yêu Yên. Nhưng lên cấp 3, một biến cố sắp chấm dứt tất cả...\"";
+
+                document.getElementById("card-badge-yen").textContent = "Cấp 2 – Cấp 3 • Ám Ảnh";
+                document.getElementById("card-title-yen").textContent = "Yên (Cuốn Nhật Ký)";
+                document.getElementById("card-desc-yen").textContent = "\"Ánh đèn vàng từ cửa sổ đối diện là cả thế giới của tôi. Nhưng nỗi sợ mất Nam ngày một lớn dần, thôi thúc tôi viết ra một kế hoạch giấu kín dưới đáy ngăn kéo...\"";
+            } else {
+                document.getElementById("select-chapter-heading").textContent = "Chapter 3: Ranh Giới Mong Manh";
+
+                document.getElementById("card-badge-nam").textContent = "Lớp 11 • Đối Diện Sự Thật";
+                document.getElementById("card-title-nam").textContent = "Nam (Lời Thú Nhận)";
+                document.getElementById("card-desc-nam").textContent = "\"Một câu phủ nhận vô tình đẩy Yên vào bước đường cùng. Tỉnh dậy trong căn phòng khóa kín trước lưỡi dao sắc lạnh, chỉ có tình yêu chân thành mới cứu được cả hai...\"";
+
+                document.getElementById("card-badge-yen").textContent = "Lớp 11 • Cơn Bão Lòng";
+                document.getElementById("card-title-yen").textContent = "Yên (Kế Hoạch Cuối Cùng)";
+                document.getElementById("card-desc-yen").textContent = "\"Sáu chữ 'Tụi tao chỉ là bạn thôi' như bản án tử hình. Viên thuốc ngủ, sợi dây thừng và con dao — liệu ánh mắt của Nam có đủ sức phá tan bóng tối trong tôi?\"";
+            }
+
+            updateProgressUI();
+        }
+
+        function goToCharacterSelect() {
+            playSfxClick();
+            hideAllScreens();
+            selectChapterTab(1);
+            document.getElementById("avatar-preview-nam").innerHTML = getCharacterSVG("nam", { smile: true, scale: "w-28 h-28" });
+            document.getElementById("avatar-preview-yen").innerHTML = getCharacterSVG("yen", { smile: true, blush: true, scale: "w-28 h-28" });
+            document.getElementById("screen-select").classList.remove("hidden");
+        }
+
+        function startSelectedChapter(route) {
+            if (selectedChapterTab === 2) {
+                const reqEnding = route === "nam" ? "nam_true" : "yen_true";
+                if (!unlockedEndings.has(reqEnding)) {
+                    playSfxClick();
+                    const charName = route === "nam" ? "Nam" : "Yên";
+                    showVnToast(`🔒 Bạn cần hoàn thành True Ending Chapter 1 của ${charName} trước!`);
+                    return;
+                }
+            }
+            if (selectedChapterTab === 3) {
+                const reqEnding = route === "nam" ? "c2_nam_true" : "c2_yen_true";
+                if (!unlockedEndings.has(reqEnding)) {
+                    playSfxClick();
+                    const charName = route === "nam" ? "Nam" : "Yên";
+                    showVnToast(`🔒 Bạn cần hoàn thành True Ending Chapter 2 của ${charName} trước!`);
+                    return;
+                }
+            }
+            startStory(route, selectedChapterTab);
+        }
+
+        function returnToHome() {
+            playSfxClick();
+            hideAllScreens();
+            updateProgressUI();
+            activeMusicTheme = "home";
+            document.getElementById("screen-home").classList.remove("hidden");
+        }
+
+        function confirmReturnHome() {
+            document.getElementById("modal-confirm-home").classList.remove("hidden");
+        }
+        function closeConfirmHome() {
+            document.getElementById("modal-confirm-home").classList.add("hidden");
+        }
+        function confirmYesHome() {
+            closeConfirmHome();
+            returnToHome();
+        }
+
+        function openEndingsModal() {
+            playSfxClick();
+            const list = document.getElementById("endings-list");
+            list.innerHTML = "";
+
+            Object.entries(ENDINGS_CATALOG).forEach(([id, info]) => {
+                const isUnlocked = unlockedEndings.has(id);
+                const card = document.createElement("div");
+                card.className = `p-4 rounded-2xl border ${isUnlocked ? 'bg-white/10 border-rose-400/40' : 'bg-black/40 border-white/10 opacity-60'}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider ${info.type === 'TRUE ENDING' ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${info.type}
+                        </span>
+                        <span class="text-lg">${isUnlocked ? info.icon : '🔒'}</span>
+                    </div>
+                    <h4 class="font-bold text-sm text-white">${isUnlocked ? info.title : 'Kết cục chưa mở khóa'}</h4>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">${isUnlocked ? info.desc : 'Hãy thử các lựa chọn khác nhau trong Chapter 1 để khám phá.'}</p>
+                `;
+                list.appendChild(card);
+            });
+
+            document.getElementById("modal-endings").classList.remove("hidden");
+        }
+
+        function closeEndingsModal() {
+            document.getElementById("modal-endings").classList.add("hidden");
+        }
+
+        // ==================== ĐIỀU KHIỂN CỐT TRUYỆN PHÂN NHÁNH ====================
+        let currentChapter = 1;
+
+        function startStory(route, chapter = 1) {
+            playSfxClick();
+            currentRoute = route;
+            currentChapter = chapter;
+            dialogueHistory = [];
+
+            if (chapter === 1) {
+                currentNodeId = route === "nam" ? "nam_1" : "yen_1";
+                activeMusicTheme = route === "yen" ? "sad" : "warm";
+                stat1Value = route === "nam" ? 10 : 65;
+                stat2Value = route === "nam" ? 25 : 15;
+            } else if (chapter === 2) {
+                currentNodeId = route === "nam" ? "c2_nam_1" : "c2_yen_1";
+                activeMusicTheme = route === "yen" ? "sad" : "warm";
+                stat1Value = route === "nam" ? 60 : 45;
+                stat2Value = route === "nam" ? 55 : 50;
+            } else {
+                currentNodeId = route === "nam" ? "c3_nam_1" : "c3_yen_1";
+                activeMusicTheme = "sad";
+                stat1Value = route === "nam" ? 75 : 85;
+                stat2Value = route === "nam" ? 40 : 20;
+            }
+
+            hideAllScreens();
+            updateStatsHUD();
+            document.getElementById("screen-game").classList.remove("hidden");
+            document.getElementById("btn-home-top").classList.remove("hidden");
+            document.getElementById("btn-backlog").classList.remove("hidden");
+            document.getElementById("btn-auto").classList.remove("hidden");
+            document.getElementById("btn-qsave").classList.remove("hidden");
+            document.getElementById("btn-qload").classList.remove("hidden");
+
+            const hudName = document.getElementById("hud-char-name");
+            const hudDot = document.getElementById("hud-char-dot");
+            if (route === "nam") {
+                hudName.textContent = `Ch.${chapter} • Nam`;
+                hudDot.className = "w-2.5 h-2.5 rounded-full bg-sky-400";
+            } else {
+                hudName.textContent = `Ch.${chapter} • Yên`;
+                hudDot.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
+            }
+
+            renderCurrentNode();
+        }
+
+        function retryCurrentRoute() {
+            startStory(currentRoute, currentChapter);
+        }
+
+        function playNextChapterDirectly() {
+            startStory(currentRoute, currentChapter + 1);
+        }
+
+        function renderCurrentNode(instant = false) {
+            const node = STORY_NODES[currentNodeId];
+            if (!node) return;
+
+            if (!instant) {
+                dialogueHistory.push({ speaker: node.speaker, text: node.text });
+            }
+
+            // Đổi nhạc theo cao trào cảm xúc từng cảnh
+            if (currentNodeId === "yen_6_saved" || currentNodeId === "c2_yen_2" || currentNodeId === "c3_nam_8_embrace" || currentNodeId === "c3_yen_9_kiss") {
+                activeMusicTheme = "warm";
+            } else if (currentNodeId === "c2_yen_7_letter" || currentNodeId === "c2_yen_10_highschool" || currentNodeId === "c2_nam_6_end" || currentNodeId === "c3_nam_2" || currentNodeId === "c3_yen_3_rain") {
+                activeMusicTheme = "sad";
+            }
+
+            document.getElementById("scene-bg").className = `absolute inset-0 transition-all duration-1000 bg-gradient-to-b ${node.bg}`;
+            document.getElementById("hud-scene-title").textContent = node.sceneTitle;
+            document.getElementById("branch-indicator").textContent = `Nhánh: ${node.branchName}`;
+
+            const gameScreen = document.getElementById("screen-game");
+            if (node.shake) {
+                gameScreen.classList.remove("animate-shake");
+                void gameScreen.offsetWidth;
+                gameScreen.classList.add("animate-shake");
+            }
+            if (node.thunder) {
+                gameScreen.classList.remove("animate-thunder");
+                void gameScreen.offsetWidth;
+                gameScreen.classList.add("animate-thunder");
+            }
+
+            renderSceneIllustration(node.visual);
+
+            const speakerBadge = document.getElementById("speaker-badge");
+            speakerBadge.textContent = node.speaker;
+            speakerBadge.className = `inline-block -mt-9 mb-2 px-4 py-1.5 rounded-full bg-gradient-to-r ${node.speakerStyle} font-bold text-xs sm:text-sm shadow-md`;
+
+            if (instant) {
+                fullTextToType = node.text;
+                finishTyping();
+            } else {
+                typeText(node.text);
+            }
+        }
+
+        function typeText(text) {
+            if (typingTimer) clearInterval(typingTimer);
+            const textEl = document.getElementById("dialogue-text");
+            const hintEl = document.getElementById("next-hint");
+
+            textEl.innerHTML = "";
+            fullTextToType = text;
+            isTyping = true;
+            hintEl.textContent = "Chạm để hiện nhanh ▾";
+
+            let charIdx = 0;
+            typingTimer = setInterval(() => {
+                if (charIdx < text.length) {
+                    const ch = text[charIdx];
+                    textEl.innerHTML += ch === "\n" ? "<br>" : ch;
+                    charIdx++;
+                } else {
+                    finishTyping();
+                }
+            }, 22);
+        }
+
+        function finishTyping() {
+            if (typingTimer) clearInterval(typingTimer);
+            isTyping = false;
+            document.getElementById("dialogue-text").innerHTML = fullTextToType.replace(/\n/g, "<br>");
+            document.getElementById("next-hint").textContent = "Chạm để tiếp tục ▾";
+            if (isAutoPlay) scheduleAutoNext();
+        }
+
+        function handleNextDialogue() {
+            const node = STORY_NODES[currentNodeId];
+            if (!node) return;
+
+            if (isTyping) {
+                finishTyping();
+                return;
+            }
+
+            playSfxClick();
+
+            // Nếu node hiện tại có mini-game tương tác
+            if (node.minigame) {
+                if (isAutoPlay) toggleAutoPlay(false);
+                launchMiniGame(node.minigame);
+                return;
+            }
+
+            // Nếu node hiện tại có ngã rẽ lựa chọn
+            if (node.choices && node.choices.length > 0) {
+                if (isAutoPlay) toggleAutoPlay(false);
+                showChoiceModal(node.choices[0]);
+                return;
+            }
+
+            // Nếu node hiện tại dẫn tới một kết cục
+            if (node.endingId) {
+                if (isAutoPlay) toggleAutoPlay(false);
+                triggerEnding(node.endingId);
+                return;
+            }
+
+            // Chuyển sang node kế tiếp
+            if (node.next) {
+                currentNodeId = node.next;
+                renderCurrentNode();
+            }
+        }
+
+        // ==================== HỆ THỐNG MINI-GAME TƯƠNG TÁC ====================
+        let mgInterval = null;
+        function launchMiniGame(mg) {
+            const overlay = document.getElementById("minigame-overlay");
+            const stage = document.getElementById("mg-stage");
+            const feedback = document.getElementById("mg-feedback");
+            document.getElementById("mg-title").textContent = mg.title;
+            document.getElementById("mg-desc").textContent = mg.desc;
+            feedback.textContent = "";
+            overlay.classList.remove("hidden");
+
+            if (mgInterval) clearInterval(mgInterval);
+
+            if (mg.type === "timing") {
+                let pos = 0;
+                let dir = 2.6;
+                stage.innerHTML = `
+                    <div class="relative w-full h-7 rounded-full bg-slate-800 border border-white/20 overflow-hidden mb-5">
+                        <div class="absolute top-0 bottom-0 left-[36%] right-[36%] bg-amber-400/50 border-x-2 border-amber-300"></div>
+                        <div id="mg-cursor" class="absolute top-0 bottom-0 w-2.5 bg-white shadow-[0_0_12px_#fff] rounded-full" style="left: 0%"></div>
+                    </div>
+                    <button id="mg-action-btn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-500 text-slate-950 font-extrabold text-base shadow-lg active:scale-95 transition">
+                        📢 HÉT LỚN NGAY!
+                    </button>
+                `;
+                mgInterval = setInterval(() => {
+                    pos += dir;
+                    if (pos >= 97 || pos <= 0) dir *= -1;
+                    const cursor = document.getElementById("mg-cursor");
+                    if (cursor) cursor.style.left = `${pos}%`;
+                }, 16);
+
+                document.getElementById("mg-action-btn").onclick = () => {
+                    clearInterval(mgInterval);
+                    playSfxClick();
+                    if (pos >= 34 && pos <= 66) {
+                        stat2Value += 15;
+                        updateStatsHUD();
+                        feedback.textContent = "✨ Xuất sắc! Tiếng hét vang dội khiến đám bắt nạt hoảng sợ bỏ chạy!";
+                    } else {
+                        feedback.textContent = "😅 Hơi lạc nhịp một chút nhưng vẫn đủ làm bọn họ giật mình!";
+                    }
+                    setTimeout(() => {
+                        overlay.classList.add("hidden");
+                        currentNodeId = mg.successNext;
+                        renderCurrentNode();
+                    }, 950);
+                };
+            } else if (mg.type === "mash") {
+                let calmProgress = 35;
+                stage.innerHTML = `
+                    <div class="w-full h-6 rounded-full bg-red-950 border border-rose-400/30 overflow-hidden mb-4">
+                        <div id="mg-calm-bar" class="h-full bg-gradient-to-r from-rose-500 to-amber-300 transition-all duration-75" style="width: 35%"></div>
+                    </div>
+                    <button id="mg-mash-btn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-indigo-500 text-slate-950 font-extrabold text-base shadow-lg active:scale-95 transition">
+                        🫧 HÍT THỞ SÂU • BÌNH TĨNH!
+                    </button>
+                `;
+                mgInterval = setInterval(() => {
+                    calmProgress -= 1.8;
+                    const bar = document.getElementById("mg-calm-bar");
+                    if (bar) bar.style.width = `${Math.max(0, calmProgress)}%`;
+                    if (calmProgress <= 0) {
+                        clearInterval(mgInterval);
+                        feedback.textContent = "🖤 Cơn thịnh nộ đã vượt quá giới hạn...";
+                        setTimeout(() => {
+                            overlay.classList.add("hidden");
+                            currentNodeId = mg.failNext;
+                            renderCurrentNode();
+                        }, 900);
+                    }
+                }, 60);
+
+                document.getElementById("mg-mash-btn").onclick = () => {
+                    playSfxClick();
+                    calmProgress += 14;
+                    const bar = document.getElementById("mg-calm-bar");
+                    if (bar) bar.style.width = `${Math.min(100, calmProgress)}%`;
+                    if (calmProgress >= 100) {
+                        clearInterval(mgInterval);
+                        stat1Value = Math.max(10, stat1Value - 15);
+                        stat2Value += 15;
+                        updateStatsHUD();
+                        feedback.textContent = "✨ Yên đã kìm nén được cơn giận đúng lúc!";
+                        setTimeout(() => {
+                            overlay.classList.add("hidden");
+                            currentNodeId = mg.successNext;
+                            renderCurrentNode();
+                        }, 900);
+                    }
+                };
+            } else if (mg.type === "window_signal") {
+                stage.innerHTML = `
+                    <button id="mg-win-btn" class="mx-auto w-36 h-36 rounded-3xl bg-amber-300/20 hover:bg-amber-300/35 border-2 border-amber-300 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 active:scale-95 glow-light">
+                        <span class="text-4xl">🪟</span>
+                        <span class="text-xs font-bold text-amber-200">Vẫy Tay Chào Nam</span>
+                    </button>
+                `;
+                document.getElementById("mg-win-btn").onclick = () => {
+                    playSfxClick();
+                    stat2Value += 15;
+                    updateStatsHUD();
+                    feedback.textContent = "💛 Bóng Nam ở cửa sổ đối diện cũng vẫy tay đáp lại!";
+                    setTimeout(() => {
+                        overlay.classList.add("hidden");
+                        currentNodeId = mg.successNext;
+                        renderCurrentNode();
+                    }, 950);
+                };
+            } else if (mg.type === "gaze_truth") {
+                stage.innerHTML = `
+                    <button id="mg-gaze-btn" class="mx-auto w-40 h-36 rounded-3xl bg-rose-400/20 hover:bg-rose-400/35 border-2 border-rose-300 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 active:scale-95 glow-light">
+                        <span class="text-4xl">👁️‍🗨️</span>
+                        <span class="text-xs font-bold text-rose-200">Nhìn Thẳng Vào Mắt Nam</span>
+                    </button>
+                `;
+                document.getElementById("mg-gaze-btn").onclick = () => {
+                    playSfxClick();
+                    stat2Value += 20;
+                    updateStatsHUD();
+                    feedback.textContent = "✨ Không có chút dối trá nào... Cậu ấy thực sự đang sợ mất Yên!";
+                    setTimeout(() => {
+                        overlay.classList.add("hidden");
+                        currentNodeId = mg.successNext;
+                        renderCurrentNode();
+                    }, 1050);
+                };
+            }
+        }
+
+        function showChoiceModal(choiceData) {
+            const overlay = document.getElementById("choice-overlay");
+            document.getElementById("choice-tag").textContent = choiceData.tag;
+            document.getElementById("choice-prompt").textContent = choiceData.prompt;
+
+            const btnContainer = document.getElementById("choice-buttons");
+            btnContainer.innerHTML = "";
+
+            choiceData.options.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-center px-5 py-3.5 rounded-2xl bg-slate-950/90 hover:bg-gradient-to-r hover:from-rose-600/90 hover:to-amber-600/90 border border-white/25 hover:border-amber-300 text-white font-bold text-sm sm:text-base shadow-xl backdrop-blur-md transition transform hover:scale-[1.02] active:scale-95";
+                btn.innerHTML = `<span>${opt.text}</span>`;
+                btn.onclick = () => {
+                    playSfxClick();
+                    if (opt.stat1) stat1Value += opt.stat1;
+                    if (opt.stat2) stat2Value += opt.stat2;
+                    updateStatsHUD();
+                    overlay.classList.add("hidden");
+                    currentNodeId = opt.next;
+                    renderCurrentNode();
+                };
+                btnContainer.appendChild(btn);
+            });
+
+            overlay.classList.remove("hidden");
+        }
+
+        function triggerEnding(endingId) {
+            unlockedEndings.add(endingId);
+            saveEndingsToStorage();
+            updateProgressUI();
+
+            const endInfo = ENDINGS_CATALOG[endingId];
+            if (!endInfo) return;
+
+            hideAllScreens();
+            document.getElementById("screen-ending").classList.remove("hidden");
+
+            document.getElementById("ending-icon").textContent = endInfo.icon;
+            document.getElementById("ending-title").textContent = endInfo.title;
+            document.getElementById("ending-summary").textContent = endInfo.desc;
+
+            // Cập nhật banner và nút chơi tiếp Chapter kế tiếp
+            const comingSoonEl = document.getElementById("coming-soon-text");
+            const btnNextChap = document.getElementById("btn-play-next-chapter");
+
+            if (endInfo.chapter === 1) {
+                comingSoonEl.textContent = "Chapter 2 đã sẵn sàng!";
+                if (endInfo.type === "TRUE ENDING") {
+                    btnNextChap.textContent = "Chơi Tiếp Chapter 2 →";
+                    btnNextChap.classList.remove("hidden");
+                } else {
+                    btnNextChap.classList.add("hidden");
+                }
+            } else if (endInfo.chapter === 2) {
+                comingSoonEl.textContent = "Chapter 3 đã sẵn sàng!";
+                if (endInfo.type === "TRUE ENDING") {
+                    btnNextChap.textContent = "Chơi Tiếp Chapter 3 →";
+                    btnNextChap.classList.remove("hidden");
+                } else {
+                    btnNextChap.classList.add("hidden");
+                }
+            } else {
+                comingSoonEl.textContent = endInfo.type === "TRUE ENDING" ? "Hoàn Thành Trọn Vẹn • Sợi Chỉ Đã Nối Liền 💖" : "Chapter 3 • Thử Lại Để Tìm True Ending";
+                btnNextChap.classList.add("hidden");
+            }
+
+            const badge = document.getElementById("ending-type-badge");
+            if (endInfo.type === "TRUE ENDING") {
+                badge.textContent = "TRUE ENDING • CHÍNH TUYẾN";
+                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
+            } else {
+                badge.textContent = `${endInfo.type} • NHÁNH RẼ`;
+                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest bg-rose-500/20 text-rose-300 border border-rose-400/30";
+            }
+        }
+
+        window.onload = function() {
+            initParticles();
+            updateProgressUI();
+        };
+    </script>
+</body>
+</html>
